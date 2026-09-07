@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Unit + e2e tests (against local mock upstream)
+        run: npm test
+      - name: Deterministic eval (six hard-constraint assertions)
+        run: npm run eval
+      - name: Engine overhead budget (P50 < 5ms)
+        run: npm run bench

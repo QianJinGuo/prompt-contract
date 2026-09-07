@@ -1,5 +1,9 @@
 # ✨ PromptBoost
 
+[![CI](https://github.com/QianJinGuo/prompt-boost/actions/workflows/ci.yml/badge.svg)](https://github.com/QianJinGuo/prompt-boost/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+![Node](https://img.shields.io/badge/node-%E2%89%A520-brightgreen)
+
 **开源的「一键 Prompt 增强」引擎：在任何你输入 AI 的地方，把模糊想法变成结构化任务规范。**
 
 灵感来自 WorkBuddy 的 Boost Prompt（功能逆向分析见仓库外 `prompt-boost-opensource-plan.md`），但定位相反：WorkBuddy 把该能力绑定在自己的 IDE 里，PromptBoost 把它做成**开放引擎 + 多端薄壳**——CLI、MCP server、浏览器 Playground 共用同一个零依赖内核。

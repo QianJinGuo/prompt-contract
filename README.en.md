@@ -1,5 +1,9 @@
 # ✨ PromptBoost
 
+[![CI](https://github.com/QianJinGuo/prompt-boost/actions/workflows/ci.yml/badge.svg)](https://github.com/QianJinGuo/prompt-boost/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+![Node](https://img.shields.io/badge/node-%E2%89%A520-brightgreen)
+
 **The open-source one-key prompt enhancement engine: turn vague ideas into structured task specs wherever you type to an AI.**
 
 Inspired by WorkBuddy's "Boost Prompt" (whose reverse-engineered internals motivated this design), but with the opposite positioning: WorkBuddy locks the capability inside its own IDE; PromptBoost is an **open engine with thin shells everywhere** — CLI, MCP server, and a browser playground sharing one zero-dependency core.
