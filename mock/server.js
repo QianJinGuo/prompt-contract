@@ -27,6 +27,12 @@ export function createMockServer({ port = 0 } = {}) {
   };
 
   const server = createServer((req, res) => {
+    // CORS: the playground calls this mock directly from the browser (cross-origin on purpose —
+    // same BYOK-direct architecture as real providers). Preflight must pass for POST + headers.
+    res.setHeader('access-control-allow-origin', '*');
+    res.setHeader('access-control-allow-headers', 'content-type, authorization');
+    res.setHeader('access-control-allow-methods', 'GET, POST, OPTIONS');
+    if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
     let body = '';
     req.on('data', (c) => { body += c; });
     req.on('end', () => {

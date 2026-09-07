@@ -1,0 +1,40 @@
+{
+  "name": "prompt-boost",
+  "version": "0.1.0",
+  "description": "One-key prompt enhancement — turn vague ideas into structured task specs anywhere you type to an AI. CLI + MCP server. Zero dependencies, BYOK, offline-capable (Ollama).",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "prompt-boost": "./packages/cli/bin/pb.js",
+    "pb": "./packages/cli/bin/pb.js",
+    "prompt-boost-mcp": "./packages/mcp-server/bin/prompt-boost-mcp.js"
+  },
+  "keywords": [
+    "prompt",
+    "prompt-engineering",
+    "llm",
+    "cli",
+    "mcp",
+    "model-context-protocol",
+    "ai-agents",
+    "ollama",
+    "openai",
+    "developer-tools"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QianJinGuo/prompt-boost.git"
+  },
+  "homepage": "https://github.com/QianJinGuo/prompt-boost#readme",
+  "bugs": "https://github.com/QianJinGuo/prompt-boost/issues",
+  "files": [
+    "packages/",
+    "profiles/",
+    "README.md",
+    "README.en.md",
+    "LICENSE"
+  ]
+}

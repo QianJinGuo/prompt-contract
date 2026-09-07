@@ -114,6 +114,54 @@ test('MCP: notification messages get no response frame', async () => {
   }
 });
 
+test('MCP: zero-key startup — prompts work, tool calls report config_error honestly (R12 caveat fixed)', async () => {
+  // strip every config source so nothing can satisfy the tool mode
+  const cleanEnv = { ...process.env };
+  for (const k of Object.keys(cleanEnv)) if (k.startsWith('PB_')) delete cleanEnv[k];
+  cleanEnv.PB_CONFIG = '/tmp/definitely-missing-pb-config.json';
+  const child = spawn(process.execPath, [SERVER], { env: cleanEnv });
+  const pending = [];
+  let buffer = '';
+  child.stdout.setEncoding('utf8');
+  child.stdout.on('data', (d) => {
+    buffer += d;
+    let nl;
+    while ((nl = buffer.indexOf('\n')) >= 0) {
+      const line = buffer.slice(0, nl).trim();
+      buffer = buffer.slice(nl + 1);
+      if (line) pending.push(JSON.parse(line));
+    }
+  });
+  const request = (obj) => new Promise((resolveReq) => {
+    const check = () => {
+      if (pending.length) resolveReq(pending.shift());
+      else setTimeout(check, 20);
+    };
+    child.stdin.write(JSON.stringify(obj) + '\n');
+    check();
+  });
+  try {
+    const init = await request({ jsonrpc: '2.0', id: 1, method: 'initialize', params: {} });
+    assert.equal(init.result.serverInfo.name, 'prompt-boost');
+
+    const get = await request({
+      jsonrpc: '2.0', id: 2, method: 'prompts/get',
+      params: { name: 'boost-coding-agent', arguments: { text: '做个网站' } }
+    });
+    assert.match(get.result.messages[0].content.text, /USER INPUT:\s*\n+做个网站/);
+
+    const call = await request({
+      jsonrpc: '2.0', id: 3, method: 'tools/call',
+      params: { name: 'enhance_prompt', arguments: { text: '做个网站' } }
+    });
+    assert.equal(call.result.isError, true);
+    assert.match(call.result.content[0].text, /config_error/);
+  } finally {
+    child.stdin.end();
+    await new Promise((r) => child.on('close', r));
+  }
+});
+
 function child_notify(s) {
   s.child.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
 }

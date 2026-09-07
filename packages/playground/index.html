@@ -144,10 +144,21 @@ let currentStrength = 'standard';
 let lastResult = null;
 let abortCtrl = null;
 
-/* config persistence — key never leaves this browser (PRD §5.4) */
+/* ?demo=1 — self-running demo for README assets. Never persists config (your real key stays untouched). */
+const DEMO = new URLSearchParams(location.search).has('demo');
+const demoPort = DEMO && new URLSearchParams(location.search).get('port');
+const DEMO_BASE = demoPort ? `http://127.0.0.1:${demoPort}/v1` : 'http://127.0.0.1:8787/v1';
+
+function selectProfile(name) {
+  currentProfile = name;
+  for (const c of els.profiles.children) c.classList.toggle('on', c.textContent === name);
+  els.hint.textContent = profiles[name] ? `${profiles[name].domain} · 输出上限 ${profiles[name].maxChars} 字符` : '';
+}
+
+/* config persistence — key never leaves this browser (PRD §5.4); suppressed in demo mode */
 for (const [id, key] of [['baseUrl', 'baseUrl'], ['apiKey', 'apiKey'], ['model', 'model'], ['provider', 'provider']]) {
   els[id].value = localStorage.getItem(`pb.${key}`) ?? '';
-  els[id].addEventListener('change', () => localStorage.setItem(`pb.${key}`, els[id].value.trim()));
+  els[id].addEventListener('change', () => { if (!DEMO) localStorage.setItem(`pb.${key}`, els[id].value.trim()); });
 }
 els.provider.addEventListener('change', () => {
   if (els.provider.value === 'ollama' && !els.baseUrl.value) els.baseUrl.value = 'http://localhost:11434';
@@ -155,19 +166,27 @@ els.provider.addEventListener('change', () => {
 });
 
 /* profiles: fetched and parsed with the same parser the CLI uses */
+const profilesLoaded = Promise.all(PROFILE_NAMES.map((name) =>
+  fetch(`/profiles/${name}.md`).then((r) => r.text()).then((md) => { profiles[name] = parseProfile(md); })
+));
 for (const name of PROFILE_NAMES) {
   const chip = document.createElement('span');
   chip.className = 'chip' + (name === currentProfile ? ' on' : '');
   chip.textContent = name;
-  chip.onclick = () => {
-    currentProfile = name;
-    for (const c of els.profiles.children) c.classList.toggle('on', c === chip);
-    els.hint.textContent = profiles[name] ? `${profiles[name].domain} · 输出上限 ${profiles[name].maxChars} 字符` : '';
-  };
+  chip.onclick = () => selectProfile(name);
   els.profiles.appendChild(chip);
-  fetch(`/profiles/${name}.md`).then((r) => r.text()).then((md) => { profiles[name] = parseProfile(md); chip.onclick(); });
 }
-els.hint.textContent = '';
+selectProfile('coding-agent');
+if (DEMO) {
+  profilesLoaded.then(() => {
+    els.baseUrl.value = DEMO_BASE;
+    els.apiKey.value = 'test-key-123';
+    els.model.value = 'mock-model';
+    els.input.value = '帮我做一个展示我家狗的网站';
+    selectProfile('coding-agent');
+    setTimeout(runBoost, 400);
+  });
+}
 
 for (const b of $('strength').children) {
   b.onclick = () => {
@@ -225,7 +244,10 @@ async function runBoost() {
       els.badges.appendChild(b);
     }
     els.copy.disabled = false; els.revert.disabled = false;
-    els.latency.textContent = `${res.meta.ms}ms · ${res.meta.chars} chars`;
+    // virtual-time headless capture distorts performance.now(); demo mode shows quality stats instead
+    els.latency.textContent = DEMO
+      ? `${res.meta.chars} chars · rules ${rules.results.filter((r) => r.pass).length}/${rules.results.length}`
+      : `${res.meta.ms}ms · ${res.meta.chars} chars`;
     els.latency.classList.add('on');
   } catch (err) {
     if (err?.code === 'aborted') { els.out.textContent = '（已取消，输入框内容未受影响）'; }
