@@ -8,19 +8,19 @@ export const CODES = {
   PROFILE_NOT_FOUND: 'profile_not_found'
 };
 
-export class PromptBoostError extends Error {
+export class PromptContractError extends Error {
   constructor(code, message, { cause } = {}) {
     super(message || code, { cause });
-    this.name = 'PromptBoostError';
+    this.name = 'PromptContractError';
     this.code = code;
   }
 }
 
-/** Normalize any thrown value into a PromptBoostError with a stable code (ADR-017 semantics: abort is fast, result is dropped). */
+/** Normalize any thrown value into a PromptContractError with a stable code (ADR-017 semantics: abort is fast, result is dropped). */
 export function normalizeError(err) {
-  if (err instanceof PromptBoostError) return err;
+  if (err instanceof PromptContractError) return err;
   if (err && (err.name === 'AbortError' || err.name === 'TimeoutError' || err.code === 'ABORT_ERR')) {
-    return new PromptBoostError(CODES.ABORTED, 'aborted by caller', { cause: err });
+    return new PromptContractError(CODES.ABORTED, 'aborted by caller', { cause: err });
   }
-  return new PromptBoostError(CODES.PROVIDER_UNAVAILABLE, err?.message || 'unexpected error', { cause: err });
+  return new PromptContractError(CODES.PROVIDER_UNAVAILABLE, err?.message || 'unexpected error', { cause: err });
 }

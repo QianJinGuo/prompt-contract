@@ -1,18 +1,18 @@
 /**
- * PromptBoost MCP server (PRD §6) — stdio, newline-delimited JSON-RPC 2.0.
+ * PromptContract MCP server (PRD §6) — stdio, newline-delimited JSON-RPC 2.0.
  *
  * Two integration modes, deliberately asymmetric in their configuration needs:
  *  - tool  `enhance_prompt`: agent-invoked; the server calls the configured provider (BYOK via env/config).
- *  - prompt `boost-<profile>`: user-invoked slash command; the rewrite instruction is injected into the
+ *  - prompt `contract-<profile>`: user-invoked slash command; the rewrite instruction is injected into the
  *    client's OWN model — this mode needs NO API key and NO provider config, so provider resolution is
  *    lazy: an unconfigured server starts fine and only tool calls report `config_error`.
  */
-import { enhance, hardConstraints, STRENGTHS, PromptBoostError, normalizeError } from '../../core/src/index.js';
+import { enhance, hardConstraints, STRENGTHS, PromptContractError, normalizeError } from '../../core/src/index.js';
 import { loadProfiles, loadProfile, resolveConfig } from '../../core/src/node.js';
 import { createOpenAIProvider } from '../../providers/src/openai.js';
 import { createOllamaProvider } from '../../providers/src/ollama.js';
 
-const SERVER_INFO = { name: 'prompt-boost', version: '0.1.0' };
+const SERVER_INFO = { name: 'prompt-contract', version: '0.1.0' };
 
 export function createServer({ profiles, getRuntime }) {
   function promptTextFor(profile, text) {
@@ -44,7 +44,7 @@ export function createServer({ profiles, getRuntime }) {
       return {
         tools: [{
           name: 'enhance_prompt',
-          description: 'Rewrite a vague user prompt into a clear, specific, executable prompt. Returns only the enhanced text. Requires a configured provider (PB_API_KEY/PB_PROVIDER or config file).',
+          description: 'Rewrite a vague user prompt into a clear, specific, executable prompt. Returns only the enhanced text. Requires a configured provider (CONTRACT_API_KEY/CONTRACT_PROVIDER or config file).',
           inputSchema: {
             type: 'object',
             properties: {
@@ -78,14 +78,14 @@ export function createServer({ profiles, getRuntime }) {
         return { content: [{ type: 'text', text: res.text }] };
       } catch (err) {
         const e = normalizeError(err);
-        return { content: [{ type: 'text', text: `prompt-boost error ${e.code}: ${e.message}` }], isError: true };
+        return { content: [{ type: 'text', text: `prompt-contract error ${e.code}: ${e.message}` }], isError: true };
       }
     }
 
     if (method === 'prompts/list') {
       return {
         prompts: profiles.map((p) => ({
-          name: `boost-${p.name}`,
+          name: `contract-${p.name}`,
           description: `Enhance a prompt with the "${p.name}" profile (uses this client's own model, no API key needed)`,
           arguments: [{ name: 'text', description: 'The raw prompt to enhance', required: true }]
         }))
@@ -94,11 +94,11 @@ export function createServer({ profiles, getRuntime }) {
 
     if (method === 'prompts/get') {
       const name = String(params?.name ?? '');
-      const profile = profiles.find((p) => `boost-${p.name}` === name);
+      const profile = profiles.find((p) => `contract-${p.name}` === name);
       if (!profile) throw rpcError(id, -32602, `unknown prompt "${name}"`);
       const text = String(params?.arguments?.text ?? '');
       if (!text.trim()) throw rpcError(id, -32602, 'argument "text" is required');
-      return { description: `PromptBoost · ${profile.name}`, messages: [{ role: 'user', content: { type: 'text', text: promptTextFor(profile, text) } }] };
+      return { description: `PromptContract · ${profile.name}`, messages: [{ role: 'user', content: { type: 'text', text: promptTextFor(profile, text) } }] };
     }
 
     throw rpcError(id, -32601, `method not found: ${method}`);
@@ -140,11 +140,11 @@ export async function serve({ stdin = process.stdin, stdout = process.stdout, st
     getRuntime();
   } catch (err) {
     startupError = err;
-    stderr.write(`[prompt-boost] tool mode unavailable (${err.code ?? 'error'}: ${err.message}) — prompts (zero-key) remain available\n`);
+    stderr.write(`[prompt-contract] tool mode unavailable (${err.code ?? 'error'}: ${err.message}) — prompts (zero-key) remain available\n`);
   }
 
   const server = createServer({ profiles, getRuntime });
-  stderr.write(`[prompt-boost] mcp server ready (tool mode: ${runtime ? `provider=${runtime.config.provider}` : 'unconfigured'}, profiles=${profiles.length})\n`);
+  stderr.write(`[prompt-contract] mcp server ready (tool mode: ${runtime ? `provider=${runtime.config.provider}` : 'unconfigured'}, profiles=${profiles.length})\n`);
 
   let buffer = '';
   stdin.setEncoding('utf8');
@@ -178,7 +178,7 @@ export async function serve({ stdin = process.stdin, stdout = process.stdout, st
 
 if (process.argv[1] && import.meta.url === `file://${process.argv[1]}`) {
   serve({ argv: process.argv.slice(2) }).catch((err) => {
-    if (err instanceof PromptBoostError) { process.stderr.write(`[prompt-boost] ${err.code}: ${err.message}\n`); process.exit(1); }
+    if (err instanceof PromptContractError) { process.stderr.write(`[prompt-contract] ${err.code}: ${err.message}\n`); process.exit(1); }
     throw err;
   });
 }

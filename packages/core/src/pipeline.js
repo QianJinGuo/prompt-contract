@@ -2,7 +2,7 @@
  * Core pipeline: assemble (profile + hard constraints + strength + context) → single LLM call
  * → deterministic postprocess. No middleware, no queues, no cache (PRD §7.6 / decision D8).
  */
-import { PromptBoostError, CODES, normalizeError } from './errors.js';
+import { PromptContractError, CODES, normalizeError } from './errors.js';
 import { detectScriptName } from './lang.js';
 import { postprocess } from './clean.js';
 
@@ -46,9 +46,9 @@ export function assembleMessages(text, { profile, strength = 'standard', context
  * @returns {Promise<{text, original, meta}>}
  */
 export async function enhance(text, opts = {}) {
-  if (!text || !String(text).trim()) throw new PromptBoostError(CODES.EMPTY_INPUT, 'empty input');
+  if (!text || !String(text).trim()) throw new PromptContractError(CODES.EMPTY_INPUT, 'empty input');
   if (!opts.provider || typeof opts.provider.complete !== 'function') {
-    throw new PromptBoostError(CODES.CONFIG, 'no provider configured');
+    throw new PromptContractError(CODES.CONFIG, 'no provider configured');
   }
   const { system, user, strength, maxChars } = assembleMessages(text, opts);
   const started = performance.now();
@@ -68,7 +68,7 @@ export async function enhance(text, opts = {}) {
     throw normalizeError(err);
   }
   const cleaned = postprocess(raw, maxChars);
-  if (cleaned === null) throw new PromptBoostError(CODES.LLM_ERROR, 'provider returned an empty result');
+  if (cleaned === null) throw new PromptContractError(CODES.LLM_ERROR, 'provider returned an empty result');
   return {
     text: cleaned,
     original: text,

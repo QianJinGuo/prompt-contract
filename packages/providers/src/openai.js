@@ -2,7 +2,7 @@
  * OpenAI-compatible provider — the universal protocol (covers OpenAI, DeepSeek, Qwen, GLM, Moonshot,
  * OpenRouter, vLLM, LM Studio, Ollama's /v1 …). Single streaming POST, no handshake (PRD §7.6-4).
  */
-import { PromptBoostError } from '../../core/src/errors.js';
+import { PromptContractError } from '../../core/src/errors.js';
 
 /** Combine caller signal + internal timeout. Caller abort must always stay effective (ADR-017). */
 function withTimeout(signal, timeoutMs) {
@@ -56,7 +56,7 @@ export function createOpenAIProvider({ baseUrl = 'https://api.openai.com/v1', ap
         cleanup();
         let detail = '';
         try { detail = (await res.text()).slice(0, 300); } catch { /* body unreadable */ }
-        throw new PromptBoostError('provider_unavailable', `provider HTTP ${res.status}${detail ? `: ${detail}` : ''}`);
+        throw new PromptContractError('provider_unavailable', `provider HTTP ${res.status}${detail ? `: ${detail}` : ''}`);
       }
       let text = '';
       const reader = res.body.getReader();

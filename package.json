@@ -1,5 +1,5 @@
 {
-  "name": "prompt-boost",
+  "name": "prompt-contract",
   "version": "0.1.0",
   "private": true,
   "description": "Open-source one-key prompt enhancement engine — CLI + MCP server + playground",

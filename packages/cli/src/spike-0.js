@@ -443,7 +443,7 @@ export function buildCompatibilityReport({
   }
 
   return {
-    schemaVersion: 'prompt-boost/spike-0.v1',
+    schemaVersion: 'prompt-contract/spike-0.v1',
     kind: 'compatibility-report',
     mode: 'dry-run',
     platform: platformInfo,
@@ -457,7 +457,7 @@ export function buildCompatibilityReport({
       pass: reasons.length === 0,
       reasons,
       watchGate: 'closed',
-      note: 'A dry-run cannot prove actual paste landing; pb watch remains gated until a separate implementation decision.',
+      note: 'A dry-run cannot prove actual paste landing; contract watch remains gated until a separate implementation decision.',
     },
   };
 }
@@ -575,7 +575,7 @@ export function formatSpike0Summary(report) {
     `capture ${summary.captureSuccesses}/${summary.attempts} (${summary.captureSuccessRate})`,
     `clipboard restore ${summary.clipboardRestoreSuccesses}/${summary.attempts} (${summary.clipboardRestoreSuccessRate})`,
     `dry-run paste-back eligibility ${summary.dryRunPasteBackSuccesses}/${summary.attempts} (${summary.dryRunPasteBackRate})`,
-    report.decision.reasons.length ? `reasons: ${report.decision.reasons.join('; ')}` : 'thresholds met; pb watch remains gated',
+    report.decision.reasons.length ? `reasons: ${report.decision.reasons.join('; ')}` : 'thresholds met; contract watch remains gated',
   ].join('\n');
 }
 

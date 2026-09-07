@@ -3,7 +3,7 @@
  * Key detail (PRD §7.6-1 / risk R9): every request carries `keep_alive` so the small model stays
  * resident in memory — a cold model load takes seconds and would kill the hotkey experience.
  */
-import { PromptBoostError } from '../../core/src/errors.js';
+import { PromptContractError } from '../../core/src/errors.js';
 
 export function createOllamaProvider({ baseUrl = 'http://localhost:11434', keepAlive = '60m', fetchImpl = globalThis.fetch } = {}) {
   const root = String(baseUrl).replace(/\/+$/, '');
@@ -23,7 +23,7 @@ export function createOllamaProvider({ baseUrl = 'http://localhost:11434', keepA
       } catch { /* best effort — doctor/doctor-report surfaces connectivity */ }
     },
     async complete({ system, user, model, signal, onDelta, maxTokens = 1024, timeoutMs = 30000, temperature = 0.7 }) {
-      if (!model) throw new PromptBoostError('config_error', 'ollama provider requires a model');
+      if (!model) throw new PromptContractError('config_error', 'ollama provider requires a model');
       let timer = null;
       let timeoutCtrl = null;
       let fullSignal = signal;
@@ -57,7 +57,7 @@ export function createOllamaProvider({ baseUrl = 'http://localhost:11434', keepA
         if (timer) clearTimeout(timer);
         let detail = '';
         try { detail = (await res.text()).slice(0, 300); } catch { /* body unreadable */ }
-        throw new PromptBoostError('provider_unavailable', `ollama HTTP ${res.status}${detail ? `: ${detail}` : ''}`);
+        throw new PromptContractError('provider_unavailable', `ollama HTTP ${res.status}${detail ? `: ${detail}` : ''}`);
       }
       let text = '';
       const reader = res.body.getReader();

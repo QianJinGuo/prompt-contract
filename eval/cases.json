@@ -1,5 +1,5 @@
 {
-  "description": "Deterministic eval cases for pb check — positives must pass ALL rule assertions, negatives must FAIL the rule named in expectFail.",
+  "description": "Deterministic eval cases for contract check — positives must pass ALL rule assertions, negatives must FAIL the rule named in expectFail.",
   "positives": [
     {
       "id": "dog-website-zh",

@@ -1,19 +1,21 @@
 {
-  "name": "prompt-boost",
-  "version": "0.1.1",
-  "description": "One-key prompt enhancement — turn vague ideas into structured task specs anywhere you type to an AI. CLI + MCP server. Zero dependencies, BYOK, offline-capable (Ollama).",
+  "name": "prompt-contract",
+  "version": "0.2.0",
+  "description": "pc — one-key prompt enhancement: turn vague ideas into structured task specs anywhere you type to an AI. CLI + MCP server. Zero dependencies, BYOK, offline-capable (Ollama).",
   "license": "Apache-2.0",
   "type": "module",
   "engines": {
     "node": ">=20"
   },
   "bin": {
-    "prompt-boost": "./packages/cli/bin/pb.js",
-    "pb": "./packages/cli/bin/pb.js",
-    "prompt-boost-mcp": "./packages/mcp-server/bin/prompt-boost-mcp.js"
+    "contract": "./packages/cli/bin/contract.js",
+    "prompt-contract": "./packages/cli/bin/contract.js",
+    "prompt-contract-mcp": "./packages/mcp-server/bin/prompt-contract-mcp.js",
+    "pb": "./packages/cli/bin/contract.js"
   },
   "keywords": [
     "prompt",
+    "prompt-contract",
     "prompt-engineering",
     "llm",
     "cli",
@@ -26,10 +28,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/QianJinGuo/prompt-boost.git"
+    "url": "git+https://github.com/QianJinGuo/prompt-contract.git"
   },
-  "homepage": "https://github.com/QianJinGuo/prompt-boost#readme",
-  "bugs": "https://github.com/QianJinGuo/prompt-boost/issues",
+  "homepage": "https://github.com/QianJinGuo/prompt-contract#readme",
+  "bugs": "https://github.com/QianJinGuo/prompt-contract/issues",
   "files": [
     "packages/",
     "profiles/",

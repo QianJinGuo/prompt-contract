@@ -1,25 +1,25 @@
 # Spike-0: macOS capture/restore diagnostic
 
-Spike-0 is the only `watch`-related implementation in this repository. It measures the macOS capture link and keeps the paste-back step as a validation-only dry run. `pb watch` remains unavailable even when a report passes.
+Spike-0 is the only `watch`-related implementation in this repository. It measures the macOS capture link and keeps the paste-back step as a validation-only dry run. `contract watch` remains unavailable even when a report passes.
 
 ## Run it
 
 From the repository root:
 
 ```bash
-node packages/cli/bin/pb.js spike-0 \
+node packages/cli/bin/contract.js spike-0 \
   --json \
-  --output /tmp/prompt-boost-spike-0.json
+  --output /tmp/prompt-contract-spike-0.json
 ```
 
 The default run covers Chrome, PyCharm, and iTerm with 20 attempts per target. The command asks for a target setup before each group. For a terminal that would steal focus when the command starts, use a setup delay and switch to the target app during the delay:
 
 ```bash
-node packages/cli/bin/pb.js spike-0 \
+node packages/cli/bin/contract.js spike-0 \
   --no-prompt \
   --setup-delay-ms 5000 \
   --json \
-  --output /tmp/prompt-boost-spike-0.json
+  --output /tmp/prompt-contract-spike-0.json
 ```
 
 `--app Chrome,PyCharm,iTerm` selects an explicit target list. `--iterations` changes attempts per target. `--settle-ms` controls the wait after ⌘C. `--pause-ms` intentionally pauses before dry-run validation so a tester can switch focus and measure the fail-closed behavior.
@@ -83,4 +83,4 @@ Apple’s permission descriptions are documented in [Accessibility access](https
 - Clipboard preservation is exact for text-only pasteboards. Rich clipboard preservation is not implemented; those attempts fail closed.
 - The report records dry-run eligibility, not actual replacement correctness or end-to-end LLM latency.
 - A terminal/automation harness can steal focus. Treat such runs as evidence of focus drift, not as a passing app result; run the diagnostic with the target app actually frontmost.
-- `pb watch` stays gated by D7. A passing JSON report is evidence for a later implementation decision, not an authorization or implementation of resident watch mode.
+- `contract watch` stays gated by D7. A passing JSON report is evidence for a later implementation decision, not an authorization or implementation of resident watch mode.

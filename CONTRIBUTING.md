@@ -1,11 +1,11 @@
 # 贡献指南 / Contributing
 
-Thanks for your interest in PromptBoost! 谢谢你愿意贡献。这个项目最重要的贡献面是**场景 profile**——为新的使用场景编写模板并附上评测用例，就是一次完整且高价值的贡献。
+Thanks for your interest in PromptContract! 谢谢你愿意贡献。这个项目最重要的贡献面是**场景 profile**——为新的使用场景编写模板并附上评测用例，就是一次完整且高价值的贡献。
 
 ## 快速开始 / Quick start
 
 ```bash
-git clone https://github.com/QianJinGuo/prompt-boost && cd prompt-boost
+git clone https://github.com/QianJinGuo/prompt-contract && cd prompt-contract
 node --test packages/core/test/*.test.js packages/providers/test/*.test.js packages/cli/test/*.test.js packages/mcp-server/test/*.test.js   # 43 tests, no npm install needed
 npm run eval     # 9 deterministic cases
 npm run bench    # engine overhead budget (P50 < 5ms)

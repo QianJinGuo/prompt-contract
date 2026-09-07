@@ -12,18 +12,18 @@ labels: bug
 
 ```bash
 # 最小复现命令（请脱敏，勿贴真实 API key）
-pb "..." --provider openai --base-url ... --model ...
+contract "..." --provider openai --base-url ... --model ...
 ```
 
 **环境 / Environment**
 
-- PromptBoost 版本 / version:
+- PromptContract 版本 / version:
 - Node 版本:
 - provider (openai / ollama) 与端点类型:
 - OS:
 
-**规则断言输出（如相关）/ `pb check` output (if relevant)**
+**规则断言输出（如相关）/ `contract check` output (if relevant)**
 
 ```
-<!-- 粘贴 pb check 或 --json 中 rules 的输出 -->
+<!-- 粘贴 contract check 或 --json 中 rules 的输出 -->
 ```

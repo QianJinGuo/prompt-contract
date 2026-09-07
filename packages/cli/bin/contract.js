@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 /**
- * pb — PromptBoost CLI (PRD §4 P0).
+ * contract — PromptContract CLI (PRD §4 P0). Physical file kept as contract.js for path stability.
  * One-shot enhance (arg or stdin), profiles, check (rule assertions), doctor.
- * `pb watch` is intentionally gated by decision D7 (Spike-0 first) — see docs/SPIKE-0.md.
+ * `contract watch` is intentionally gated by decision D7 (Spike-0 first) — see docs/SPIKE-0.md.
  */
-import { enhance, checkRules, PromptBoostError, normalizeError } from '../../core/src/index.js';
+import { enhance, checkRules, PromptContractError, normalizeError } from '../../core/src/index.js';
 import { loadProfiles, loadProfile, resolveConfig } from '../../core/src/node.js';
 import { createOpenAIProvider } from '../../providers/src/openai.js';
 import { createOllamaProvider } from '../../providers/src/ollama.js';
 import { readFileSync, existsSync, writeFileSync } from 'node:fs';
+import { basename } from 'node:path';
 import {
   createMacOSAdapter,
   DEFAULT_SPIKE_THRESHOLDS,
@@ -18,26 +19,31 @@ import {
   runSpike0,
 } from '../src/spike-0.js';
 
-const VERSION = '0.1.0';
-const USAGE = `pb — one-key prompt enhancement (PromptBoost v${VERSION})
+// `contract` was the command name before the prompt-contract rename; warn while the alias ships.
+if (basename(process.argv[1] || '') === 'contract') {
+  process.stderr.write('[deprecated] this CLI is now `contract` (prompt-contract); the `contract` command will be removed in a future release.\n');
+}
+
+const VERSION = '0.2.0';
+const USAGE = `contract — one-key prompt enhancement (PromptContract v${VERSION})
 
 Usage:
-  pb "build me a website for my dog"     enhance a prompt (prints enhanced text to stdout)
-  cat prompt.txt | pb                    enhance from stdin
-  pb profiles                            list built-in profiles
-  pb check --original "..." --enhanced "..."
+  contract "build me a website for my dog"     enhance a prompt (prints enhanced text to stdout)
+  cat prompt.txt | contract                    enhance from stdin
+  contract profiles                            list built-in profiles
+  contract check --original "..." --enhanced "..."
                                          run the six hard-constraint rule assertions
-  pb doctor                              verify config, provider reachability, profiles
-  pb spike-0                             macOS-only capture/restore compatibility diagnostic (dry-run)
-  pb watch                               NOT BUILT — gated by decision D7 (Spike-0 first); see docs/SPIKE-0.md
+  contract doctor                              verify config, provider reachability, profiles
+  contract spike-0                             macOS-only capture/restore compatibility diagnostic (dry-run)
+  contract watch                               NOT BUILT — gated by decision D7 (Spike-0 first); see docs/SPIKE-0.md
 
 Options:
   -p, --profile <name>     scenario profile (default: coding-agent)
   -s, --strength <mode>    polish | standard (default) | expand
   -m, --model <model>      model override
       --provider <name>    openai (default) | ollama
-      --base-url <url>     OpenAI-compatible base URL (or PB_BASE_URL)
-      --api-key <key>      API key (or PB_API_KEY; local ollama needs none)
+      --base-url <url>     OpenAI-compatible base URL (or CONTRACT_BASE_URL)
+      --api-key <key>      API key (or CONTRACT_API_KEY; local ollama needs none)
       --context <text>     background context to assemble into the prompt
       --max-chars <n>      output clamp (default from profile, 800)
       --timeout <ms>       request timeout (default 30000)
@@ -64,7 +70,7 @@ function parseArgs(argv) {
     else if (a === '--help' || a === '-h') flags.help = true;
     else if (a === '--version') flags.version = true;
     else if (needsValue.has(a)) flags[camel(a)] = argv[++i];
-    else if (a.startsWith('-')) throw new PromptBoostError('config_error', `unknown flag ${a}`);
+    else if (a.startsWith('-')) throw new PromptContractError('config_error', `unknown flag ${a}`);
     else flags._.push(a);
   }
   return flags;
@@ -127,7 +133,7 @@ async function cmdEnhance(flags) {
     if (!flags.noStream) {
       process.stderr.write(`\n— ${res.meta.profile} · ${res.meta.model} · ${res.meta.ms}ms · ${res.meta.chars} chars\n`);
       if (!rules.pass) {
-        process.stderr.write('rule assertions (advisory — run `pb check` for gate mode):\n');
+        process.stderr.write('rule assertions (advisory — run `contract check` for gate mode):\n');
         for (const r of rules.results.filter((r) => !r.pass)) {
           process.stderr.write(`  [FAIL] ${r.title}${r.detail ? ` — ${r.detail}` : ''}\n`);
         }
@@ -162,7 +168,7 @@ function cmdCheck(flags) {
     }
   }
   if (original === undefined || enhanced === undefined) {
-    process.stderr.write('pb check requires --original and --enhanced (or a JSON {original, enhanced} line on stdin)\n');
+    process.stderr.write('contract check requires --original and --enhanced (or a JSON {original, enhanced} line on stdin)\n');
     return 2;
   }
   const rules = checkRules(original, enhanced, { maxChars: flags.maxChars ? parseInt(flags.maxChars, 10) : 800 });
@@ -198,7 +204,7 @@ async function cmdDoctor(flags) {
 
 async function cmdSpike0(flags) {
   if (!isMacOS) {
-    process.stderr.write('pb spike-0 is macOS-only: requires pbpaste, pbcopy, and Accessibility-backed System Events.\n');
+    process.stderr.write('contract spike-0 is macOS-only: requires pbpaste, pbcopy, and Accessibility-backed System Events.\n');
     return 2;
   }
 
@@ -210,7 +216,7 @@ async function cmdSpike0(flags) {
   const pauseMs = flags.pauseMs === undefined ? 0 : Number.parseInt(flags.pauseMs, 10);
   const setupDelayMs = flags.setupDelayMs === undefined ? 0 : Number.parseInt(flags.setupDelayMs, 10);
   if (!Number.isInteger(iterations) || iterations < 1 || !Number.isInteger(settleMs) || settleMs < 0 || !Number.isInteger(pauseMs) || pauseMs < 0 || !Number.isInteger(setupDelayMs) || setupDelayMs < 0) {
-    process.stderr.write('pb spike-0 requires non-negative integer --settle-ms/--pause-ms/--setup-delay-ms and positive integer --iterations\n');
+    process.stderr.write('contract spike-0 requires non-negative integer --settle-ms/--pause-ms/--setup-delay-ms and positive integer --iterations\n');
     return 2;
   }
 
@@ -244,7 +250,7 @@ async function main() {
     case 'doctor': return await cmdDoctor(flags);
     case 'spike-0': return await cmdSpike0(flags);
     case 'watch':
-      process.stderr.write('pb watch is gated by decision D7: run `pb spike-0` and review its evidence before implementing watch.\nThe watch implementation remains intentionally unavailable in this Spike-0-only change.\n');
+      process.stderr.write('contract watch is gated by decision D7: run `contract spike-0` and review its evidence before implementing watch.\nThe watch implementation remains intentionally unavailable in this Spike-0-only change.\n');
       return 2;
     default:
       // treat unknown first word as prompt text
@@ -255,6 +261,6 @@ async function main() {
 
 main().then((code) => process.exit(code)).catch((err) => {
   const e = normalizeError(err);
-  process.stderr.write(`pb: ${e.code}: ${e.message}\n`);
+  process.stderr.write(`contract: ${e.code}: ${e.message}\n`);
   process.exit(1);
 });

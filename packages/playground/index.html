@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PromptBoost · 一键增强你的 Prompt</title>
+<title>PromptContract · 一键增强你的 Prompt</title>
 <style>
   :root {
     --bg: #0d1117; --panel: #151b24; --panel2: #1b2330; --line: #26303f;
@@ -68,7 +68,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1><span class="spark">✨</span> PromptBoost</h1>
+    <h1><span class="spark">✨</span> PromptContract</h1>
     <span class="sub">模糊想法 → 结构化任务规范 · BYOK · 数据不出浏览器</span>
     <span class="latency" id="latency">engine ready</span>
   </header>
@@ -125,7 +125,7 @@
 </div>
 
 <script type="module">
-import { enhance, checkRules, parseProfile, PromptBoostError } from '/packages/core/src/index.js';
+import { enhance, checkRules, parseProfile, PromptContractError } from '/packages/core/src/index.js';
 import { createOpenAIProvider } from '/packages/providers/src/openai.js';
 import { createOllamaProvider } from '/packages/providers/src/ollama.js';
 
@@ -157,8 +157,8 @@ function selectProfile(name) {
 
 /* config persistence — key never leaves this browser (PRD §5.4); suppressed in demo mode */
 for (const [id, key] of [['baseUrl', 'baseUrl'], ['apiKey', 'apiKey'], ['model', 'model'], ['provider', 'provider']]) {
-  els[id].value = localStorage.getItem(`pb.${key}`) ?? '';
-  els[id].addEventListener('change', () => { if (!DEMO) localStorage.setItem(`pb.${key}`, els[id].value.trim()); });
+  els[id].value = localStorage.getItem(`contract.${key}`) ?? '';
+  els[id].addEventListener('change', () => { if (!DEMO) localStorage.setItem(`contract.${key}`, els[id].value.trim()); });
 }
 els.provider.addEventListener('change', () => {
   if (els.provider.value === 'ollama' && !els.baseUrl.value) els.baseUrl.value = 'http://localhost:11434';
