@@ -2,13 +2,21 @@
 /**
  * pb — PromptBoost CLI (PRD §4 P0).
  * One-shot enhance (arg or stdin), profiles, check (rule assertions), doctor.
- * `pb watch` is intentionally gated by decision D7 (Spike-0 first) — see docs in repo root.
+ * `pb watch` is intentionally gated by decision D7 (Spike-0 first) — see docs/SPIKE-0.md.
  */
 import { enhance, checkRules, PromptBoostError, normalizeError } from '../../core/src/index.js';
 import { loadProfiles, loadProfile, resolveConfig } from '../../core/src/node.js';
 import { createOpenAIProvider } from '../../providers/src/openai.js';
 import { createOllamaProvider } from '../../providers/src/ollama.js';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, writeFileSync } from 'node:fs';
+import {
+  createMacOSAdapter,
+  DEFAULT_SPIKE_THRESHOLDS,
+  formatSpike0Summary,
+  isMacOS,
+  resolveSpikeTargets,
+  runSpike0,
+} from '../src/spike-0.js';
 
 const VERSION = '0.1.0';
 const USAGE = `pb — one-key prompt enhancement (PromptBoost v${VERSION})
@@ -20,7 +28,8 @@ Usage:
   pb check --original "..." --enhanced "..."
                                          run the six hard-constraint rule assertions
   pb doctor                              verify config, provider reachability, profiles
-  pb watch                               NOT BUILT — gated by decision D7 (Spike-0 first); see plan doc
+  pb spike-0                             macOS-only capture/restore compatibility diagnostic (dry-run)
+  pb watch                               NOT BUILT — gated by decision D7 (Spike-0 first); see docs/SPIKE-0.md
 
 Options:
   -p, --profile <name>     scenario profile (default: coding-agent)
@@ -32,18 +41,26 @@ Options:
       --context <text>     background context to assemble into the prompt
       --max-chars <n>      output clamp (default from profile, 800)
       --timeout <ms>       request timeout (default 30000)
+      --app <names>        Spike-0 targets: Chrome,PyCharm,iTerm (default: all three)
+      --iterations <n>     Spike-0 attempts per target (default: 20)
+      --settle-ms <ms>     Spike-0 wait after ⌘C before reading (default: 75)
+      --pause-ms <ms>      Spike-0 pause before dry-run focus validation
+      --setup-delay-ms <ms> Spike-0 delay before each target capture
+      --no-prompt          Spike-0 do not wait for target/app setup
+      --output <path>      write Spike-0 JSON report to a file
       --json               machine-readable output {original, enhanced, meta, rules}
       --no-stream          buffer instead of streaming progress
   -h, --help               show this help`;
 
 function parseArgs(argv) {
   const flags = { _: [] };
-  const needsValue = new Set(['--profile', '-p', '--strength', '-s', '--model', '-m', '--provider', '--base-url', '--api-key', '--context', '--max-chars', '--timeout', '--original', '--enhanced']);
+  const needsValue = new Set(['--profile', '-p', '--strength', '-s', '--model', '-m', '--provider', '--base-url', '--api-key', '--context', '--max-chars', '--timeout', '--app', '--iterations', '--settle-ms', '--pause-ms', '--setup-delay-ms', '--output', '--original', '--enhanced']);
   const camel = (k) => k.replace(/^--?/, '').replace(/-([a-z])/g, (_, c) => c.toUpperCase());
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--json') flags.json = true;
     else if (a === '--no-stream') flags.noStream = true;
+    else if (a === '--no-prompt') flags.noPrompt = true;
     else if (a === '--help' || a === '-h') flags.help = true;
     else if (a === '--version') flags.version = true;
     else if (needsValue.has(a)) flags[camel(a)] = argv[++i];
@@ -179,6 +196,41 @@ async function cmdDoctor(flags) {
   return ok ? 0 : 1;
 }
 
+async function cmdSpike0(flags) {
+  if (!isMacOS) {
+    process.stderr.write('pb spike-0 is macOS-only: requires pbpaste, pbcopy, and Accessibility-backed System Events.\n');
+    return 2;
+  }
+
+  const targets = resolveSpikeTargets(flags.app || DEFAULT_SPIKE_THRESHOLDS.requiredTargets.join(','));
+  const iterations = flags.iterations === undefined
+    ? DEFAULT_SPIKE_THRESHOLDS.iterationsPerTarget
+    : Number.parseInt(flags.iterations, 10);
+  const settleMs = flags.settleMs === undefined ? 75 : Number.parseInt(flags.settleMs, 10);
+  const pauseMs = flags.pauseMs === undefined ? 0 : Number.parseInt(flags.pauseMs, 10);
+  const setupDelayMs = flags.setupDelayMs === undefined ? 0 : Number.parseInt(flags.setupDelayMs, 10);
+  if (!Number.isInteger(iterations) || iterations < 1 || !Number.isInteger(settleMs) || settleMs < 0 || !Number.isInteger(pauseMs) || pauseMs < 0 || !Number.isInteger(setupDelayMs) || setupDelayMs < 0) {
+    process.stderr.write('pb spike-0 requires non-negative integer --settle-ms/--pause-ms/--setup-delay-ms and positive integer --iterations\n');
+    return 2;
+  }
+
+  const report = await runSpike0({
+    adapter: createMacOSAdapter(),
+    targets,
+    iterations,
+    settleMs,
+    pauseMs,
+    setupDelayMs,
+    interactive: !flags.noPrompt && Boolean(process.stdin.isTTY),
+    announce: (message) => process.stderr.write(`${message}\n`),
+  });
+  const serialized = JSON.stringify(report, null, 2) + '\n';
+  if (flags.output) writeFileSync(flags.output, serialized, 'utf8');
+  if (flags.json) process.stdout.write(serialized);
+  else process.stdout.write(formatSpike0Summary(report) + '\n');
+  return report.decision.pass ? 0 : 1;
+}
+
 async function main() {
   const flags = parseArgs(process.argv.slice(2));
   if (flags.help) { process.stdout.write(USAGE + '\n'); return 0; }
@@ -190,8 +242,9 @@ async function main() {
     case 'profiles': return cmdProfiles(flags);
     case 'check': return cmdCheck(flags);
     case 'doctor': return await cmdDoctor(flags);
+    case 'spike-0': return await cmdSpike0(flags);
     case 'watch':
-      process.stderr.write('pb watch is gated by decision D7: the capture/paste-back link must pass Spike-0 first.\nSee prompt-boost-opensource-plan.md §10 (Spike-0) and §11 (decision record).\n');
+      process.stderr.write('pb watch is gated by decision D7: run `pb spike-0` and review its evidence before implementing watch.\nThe watch implementation remains intentionally unavailable in this Spike-0-only change.\n');
       return 2;
     default:
       // treat unknown first word as prompt text

@@ -25,6 +25,7 @@ mkdirSync(out, { recursive: true });
 
 for (const src of [
   'packages/cli/bin',
+  'packages/cli/src',
   'packages/cli/package.json',
   'packages/core/src',
   'packages/mcp-server/bin',

@@ -73,6 +73,15 @@ test('pb watch is gated by decision D7', async () => {
   assert.match(stderr, /D7/);
 });
 
+test('pb spike-0 exposes the macOS dry-run diagnostic', async () => {
+  const { code, stdout } = await runPb(['spike-0', '--help']);
+  assert.equal(code, 0);
+  assert.match(stdout, /dry-run/);
+  assert.match(stdout, /Chrome/);
+  assert.match(stdout, /PyCharm/);
+  assert.match(stdout, /iTerm/);
+});
+
 test('pb doctor reports provider problems honestly', async () => {
   const { code, stderr } = await runPb(['doctor', '--provider', 'openai', '--base-url', `${base}/v1`, '--api-key', 'wrong-key', '--model', 'mock-model']);
   assert.equal(code, 1);

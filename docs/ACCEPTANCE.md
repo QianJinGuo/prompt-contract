@@ -8,7 +8,8 @@
 |---|---|---|
 | core 引擎 + providers + 3 profiles + CLI + MCP server + playground + 中英 README（M0） | ✅ 实现 | PRD §10 最小集，拍板结论（§0.4/§11） |
 | `pb eval` 确定性规则断言部分 | ✅ 提前实现为 `pb check` | PRD 附录「硬约束进 eval 断言」——规则与模板共用同一规格，是本版验收标准本身 |
-| `pb watch` 快捷键常驻、浏览器插件、SDK 独立包、LLM-as-judge leaderboard | ❌ 不实现 | 决策记录 D7：链路验证（Spike-0）先于主形态编码；M1/M2 分期 |
+| `pb spike-0` macOS 取词/剪贴板恢复/焦点 dry-run 诊断 | ✅ 实现 | `packages/cli/src/spike-0.js` + `packages/cli/test/spike-0.test.js`；阈值与权限见 [SPIKE-0.md](SPIKE-0.md) |
+| `pb watch` 快捷键常驻、浏览器插件、SDK 独立包、LLM-as-judge leaderboard | ❌ 不实现 | 决策记录 D7：Spike-0 只提供证据，不实现或自动解锁 watch；M1/M2 分期 |
 
 ## 需求映射
 
@@ -26,7 +27,7 @@
 | R10 | **连接预热 + keep_alive 钉住模型**（§7.6-1，v1.1 合并项） | `provider.warmup()`：OpenAI 兼容端 GET /models 建 TLS 连接；Ollama 预载 + 每次请求携带 `keep_alive` | `ollama.test.js` 断言 keep_alive 参数直达服务端 |
 | R11 | MCP tools 接入（§6 agent 自主调用） | `mcp-server`：stdio JSON-RPC 2.0，`enhance_prompt` tool（text/profile/strength/context） | `mcp.test.js`：initialize → tools/list → tools/call 全链路 |
 | R12 | MCP prompts 接入（§6 用户显式触发 `/boost`） | 同 server 暴露 `boost-<profile>` prompts；**该模式把改写指令注入客户端自有模型，零 key 可用** | `mcp.test.js`：prompts/get 返回含 USER INPUT 的消息 |
-| R13 | CLI 形态（§4 P0） | `pb`：一次性增强（参数/stdin）、`--json`、`profiles`、`check`、`doctor`；`pb watch` 明示被 D7 门控 | `cli.test.js` e2e |
+| R13 | CLI 形态（§4 P0） | `pb`：一次性增强（参数/stdin）、`--json`、`profiles`、`check`、`doctor`；`pb spike-0` 输出兼容性 JSON；`pb watch` 明示被 D7 门控 | `cli.test.js` e2e · `spike-0.test.js` |
 | R14 | Web playground（§4 P0 转化漏斗） | 单文件 UI，BYOK 直连（key 只存 localStorage），流式 + 规则徽章 + Revert；零构建、零依赖静态服务 | 手动 + `serve.js` 可启动 |
 | R15 | 性能预算（§5.3/§7.6） | 单次 POST、无中间件、模板精简、`max_tokens` 由 maxChars 推导；**不做结果缓存**（v1.1 缓存降级） | `bench.js`：引擎自身开销（组装+清洗）P50 < 5ms；TTFT 由 provider 决定并在 README 如实声明 |
 | R16 | 验收标准即规则断言（附录） | `rules.js` 6 条确定性断言 = `pb check` = Playground 徽章 = `eval/run.mjs` 用例跑分 | `eval/run.mjs` 全 PASS |
@@ -34,7 +35,8 @@
 
 ## 独立软件事实声明
 
-- 本版不含 `pb watch`（D7 门控）：`pb watch` 会打印指向 PRD 决策记录的说明并退出。
+- 本版不含 `pb watch`（D7 门控）：`pb watch` 会打印指向 Spike-0 证据与 D7 决策的说明并退出。
+- `pb spike-0` 是 macOS-only、text-only clipboard 的 dry-run 诊断；它永不发送 ⌘V，因此不能证明真实 paste landing 正确。
 - 引擎延迟基准只覆盖引擎自身开销；模型 TTFT 属于外部依赖，README 不做夸大承诺。
 
 ## 证据边界（本仓库不声称什么）

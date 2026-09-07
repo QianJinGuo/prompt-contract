@@ -53,7 +53,7 @@ pb "帮我写一封请假邮件"
 ## 质量门禁与诚实边界
 
 ```bash
-npm test        # 44 项：引擎单测 + SSE/ndjson 流式 + CLI/MCP 端到端（对本地 mock）
+npm test        # 55 项：引擎单测 + SSE/ndjson 流式 + CLI/MCP 端到端（对本地 mock）
 npm run eval    # 9 个确定性用例（六条硬约束断言）
 npm run bench   # 引擎自身开销 P50 ≈ 0.005ms（预算 <5ms）
 ```
@@ -62,8 +62,8 @@ npm run bench   # 引擎自身开销 P50 ≈ 0.005ms（预算 <5ms）
 
 ## 状态与路线图（诚实版）
 
-- **已交付**：引擎、CLI、MCP server（tool + 零 key prompts）、Playground、3 个 profiles、eval 用例、CI 矩阵
-- **被门控**：`pb watch`（全局热键常驻）需先通过取词/回贴可靠性验证（决策 D7）——验证前我们不声称「任何输入处可用」
+- **已交付**：引擎、CLI（含 `spike-0`）、MCP server（tool + 零 key prompts）、Playground、3 个 profiles、eval 用例、CI 矩阵
+- **被门控**：`pb watch`（全局热键常驻）仍不可用。`pb spike-0` 只测 macOS 取词、剪贴板恢复和焦点校验的 dry-run，不发送粘贴，也不会自行解锁 watch；见 [docs/SPIKE-0.md](docs/SPIKE-0.md)
 - **开放验证**：任务级效果评测；prompt 增强赛道竞品众多且大厂在内置，我们追求的长期价值（稳定、可迁移、隐私优先的 agent 输入）在评测给出数据之前只是假设
 - **推迟**：动画 demo 资产、IDE 插件、LLM-as-judge（作为任务级评测中的评分器之一）
 

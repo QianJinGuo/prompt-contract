@@ -69,7 +69,7 @@ Community profiles are the main contribution surface — a PR adding `profiles/<
 ## Quality gates — and their honest limits
 
 ```bash
-npm test        # 44 tests: engine units + SSE/ndjson streaming + CLI/MCP e2e against a local mock
+npm test        # 55 tests: engine units + SSE/ndjson streaming + CLI/MCP e2e against a local mock
 npm run eval    # 9 deterministic cases over the six hard-constraint assertions
 npm run bench   # engine overhead: P50 ≈ 0.005ms (budget < 5ms)
 ```
@@ -87,14 +87,14 @@ raw input → script/scenario detect → profile + hard constraints + strength (
 
 ## Status & roadmap — stated honestly
 
-- **Shipped:** engine, CLI (`pb` / `check` / `doctor` / `profiles`), MCP server (tool + zero-key prompts), playground, 3 profiles, eval cases, CI matrix.
-- **Gated:** `pb watch` (global-hotkey resident mode) requires a capture/paste-back reliability spike before implementation (decision D7 — `pb watch` explains this and exits). We do not claim "works anywhere you type" until that link is validated.
+- **Shipped:** engine, CLI (`pb` / `check` / `doctor` / `profiles` / `spike-0`), MCP server (tool + zero-key prompts), playground, 3 profiles, eval cases, CI matrix.
+- **Gated:** `pb watch` (global-hotkey resident mode) remains intentionally unavailable. `pb spike-0` measures macOS capture/clipboard safety and dry-run focus eligibility, but never pastes or unlocks watch by itself; see [docs/SPIKE-0.md](docs/SPIKE-0.md).
 - **Open validation:** task-level outcome evaluation (above). Prompt enhancement is a competitive space with built-in features in major products; the durable value we pursue is stable, portable, privacy-preserving agent inputs — and that value is a hypothesis until the task-level eval says otherwise.
 - Deferred: animated demo asset, IDE plugins, LLM-as-judge as *one* scorer inside the task-level eval.
 
 ## Layout
 
-`packages/core` (engine, browser-safe, zero deps) · `packages/providers` (OpenAI-compatible SSE + Ollama `keep_alive`) · `packages/cli` · `packages/mcp-server` · `packages/playground` · `profiles/` · `eval/` · `mock/` · `docs/ACCEPTANCE.md` (requirements → implementation → acceptance + evidence boundaries)
+`packages/core` (engine, browser-safe, zero deps) · `packages/providers` (OpenAI-compatible SSE + Ollama `keep_alive`) · `packages/cli` · `packages/mcp-server` · `packages/playground` · `profiles/` · `eval/` · `mock/` · `docs/ACCEPTANCE.md` · `docs/SPIKE-0.md` (requirements → implementation → acceptance + evidence boundaries)
 
 ## Contributing & License
 
