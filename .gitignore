@@ -1,0 +1,14 @@
+# dependencies (kept for completeness — this repo is zero-dependency by design)
+node_modules/
+
+# local env & secrets — BYOK must never enter version control (PRD §5.4)
+.env
+.env.*
+*.local.json
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/

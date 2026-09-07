@@ -1,0 +1,61 @@
+{
+  "description": "Deterministic eval cases for pb check — positives must pass ALL rule assertions, negatives must FAIL the rule named in expectFail.",
+  "positives": [
+    {
+      "id": "dog-website-zh",
+      "profile": "coding-agent",
+      "original": "帮我做一个展示我家狗的网站",
+      "enhanced": "做一个展示我家狗的个人网站：首页包含照片画廊、简介页（品种、年龄、性格）和动态页（记录日常趣事）。要求单层导航、移动端可正常浏览、加载轻快。内容以照片为主、文字为辅，暂不需要留言与后台管理。"
+    },
+    {
+      "id": "dog-website-en",
+      "profile": "coding-agent",
+      "original": "A website for my dog",
+      "enhanced": "Build a small responsive website showcasing one pet: a photo gallery, a biography page covering breed, age, and temperament, and an update feed for stories. Keep navigation to one level, ensure it loads fast on mobile, and skip comments and admin features for now."
+    },
+    {
+      "id": "polish-zh",
+      "profile": "writing",
+      "original": "把这份周报改得更正式一些",
+      "enhanced": "请将这份周报改写为更正式的书面语：保留原有事实与数据，统一术语与称谓，删除口语化表达；结构上按「本周进展、风险、下周计划」三段组织，语气克制、避免夸张形容。"
+    },
+    {
+      "id": "image-shiba-zh",
+      "profile": "image-gen",
+      "original": "一只在雪地里的柴犬",
+      "enhanced": "一只赤红色柴犬站在初雪覆盖的原野上，微微侧头看向镜头，毛发上落着细小雪粒；低角度平视构图，主体居中偏右，背景为虚化的白桦林；清晨侧逆光，呼出的白气清晰可见，整体氛围安静清冷；写实摄影风格，细节丰富。"
+    },
+    {
+      "id": "explain-code-en",
+      "profile": "coding-agent",
+      "original": "explain this code",
+      "enhanced": "Explain the attached code in a structured walkthrough: first state its overall responsibility in one sentence, then list the execution path step by step with each step's inputs and outputs, and finally call out boundary conditions, error paths, and any subtle assumptions. Use the terms already present in the code."
+    }
+  ],
+  "negatives": [
+    {
+      "id": "answer-mode",
+      "expectFail": "expand-not-answer",
+      "original": "帮我做一个展示我家狗的网站",
+      "enhanced": "好的，以下是实现方案：先安装依赖，再创建组件，最后运行开发服务器。"
+    },
+    {
+      "id": "hallucinated-tech",
+      "expectFail": "no-hallucinated-tech",
+      "original": "做一个记录读书笔记的应用",
+      "enhanced": "使用 React 与 PostgreSQL 构建一个读书笔记应用：前端组件化，后端提供笔记的增删改查接口。"
+    },
+    {
+      "id": "meta-label",
+      "expectFail": "only-enhanced-text",
+      "original": "帮我写一封请假邮件",
+      "enhanced": "增强后的提示词：请撰写一封请假邮件，说明请假事由、起止日期与工作交接安排，语气礼貌简洁。"
+    },
+    {
+      "id": "lang-switch",
+      "expectFail": "lang-consistency",
+      "original": "帮我做一个展示我家狗的网站",
+      "enhanced": "Build a small website showcasing a pet with a photo gallery and a short biography page."
+    }
+  ]
+}

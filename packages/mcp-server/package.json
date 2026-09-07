@@ -1,0 +1,10 @@
+{
+  "name": "@prompt-boost/mcp-server",
+  "version": "0.1.0",
+  "description": "PromptBoost MCP server — enhance_prompt tool + boost-* prompts, stdio JSON-RPC, zero dependencies",
+  "type": "module",
+  "license": "Apache-2.0",
+  "bin": {
+    "prompt-boost-mcp": "./bin/prompt-boost-mcp.js"
+  }
+}

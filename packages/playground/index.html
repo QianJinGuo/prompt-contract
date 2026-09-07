@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PromptBoost · 一键增强你的 Prompt</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #151b24; --panel2: #1b2330; --line: #26303f;
+    --text: #e6edf3; --dim: #8b98a9; --accent: #7c5cff; --accent2: #9d8bff;
+    --ok: #3fb950; --warn: #d29922; --err: #f85149; --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 -apple-system, "PingFang SC", "Segoe UI", sans-serif; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 20px 60px; }
+  header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+  h1 { font-size: 22px; margin: 0; letter-spacing: .3px; }
+  h1 .spark { color: var(--accent); }
+  .sub { color: var(--dim); font-size: 13px; }
+  .latency { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--dim); border: 1px solid var(--line); border-radius: 99px; padding: 2px 10px; }
+  .latency.on { color: var(--ok); border-color: var(--ok); }
+
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-top: 16px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  label.lbl { color: var(--dim); font-size: 12px; min-width: 64px; }
+  input[type=text], input[type=password], select {
+    background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 8px;
+    padding: 7px 10px; font-size: 13px; outline: none; min-width: 150px;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  .chip { border: 1px solid var(--line); background: var(--panel2); color: var(--dim); border-radius: 99px; padding: 5px 14px; cursor: pointer; font-size: 13px; user-select: none; }
+  .chip.on { background: color-mix(in srgb, var(--accent) 22%, transparent); border-color: var(--accent); color: var(--text); }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button { background: transparent; color: var(--dim); border: 0; padding: 6px 16px; cursor: pointer; font-size: 13px; }
+  .seg button.on { background: var(--accent); color: #fff; }
+
+  textarea {
+    width: 100%; min-height: 96px; resize: vertical; background: var(--panel2); color: var(--text);
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; font-size: 15px; outline: none;
+  }
+  .boost {
+    margin-top: 12px; background: linear-gradient(135deg, var(--accent), #5a8bff); border: 0; color: #fff;
+    font-size: 15px; font-weight: 600; border-radius: 10px; padding: 10px 26px; cursor: pointer;
+  }
+  .boost:disabled { opacity: .5; cursor: wait; }
+  .hint { color: var(--dim); font-size: 12px; margin-top: 8px; }
+  kbd { font-family: var(--mono); background: var(--panel2); border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; font-size: 11px; }
+
+  .panes { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+  @media (max-width: 800px) { .panes { grid-template-columns: 1fr; } }
+  .pane { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; min-height: 140px; }
+  .pane h3 { margin: 0 0 8px; font-size: 12px; color: var(--dim); font-weight: 500; letter-spacing: .5px; }
+  .pane .body { font-size: 14px; white-space: pre-wrap; word-break: break-word; }
+  .caret::after { content: "▍"; color: var(--accent); animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .actions { margin-top: 10px; display: flex; gap: 8px; }
+  .btn { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 5px 14px; cursor: pointer; font-size: 13px; }
+  .btn:hover { border-color: var(--accent); }
+  .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .badge { font-size: 11px; border-radius: 99px; padding: 2px 10px; border: 1px solid var(--line); color: var(--dim); }
+  .badge.pass { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 55%, transparent); }
+  .badge.fail { color: var(--err); border-color: color-mix(in srgb, var(--err) 55%, transparent); }
+  .banner { margin-top: 12px; background: color-mix(in srgb, var(--err) 12%, transparent); border: 1px solid color-mix(in srgb, var(--err) 45%, transparent); color: #ffb4ae; border-radius: 10px; padding: 10px 14px; font-size: 13px; display: none; }
+  .banner code { font-family: var(--mono); }
+  .dimbox { color: var(--dim); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="spark">✨</span> PromptBoost</h1>
+    <span class="sub">模糊想法 → 结构化任务规范 · BYOK · 数据不出浏览器</span>
+    <span class="latency" id="latency">engine ready</span>
+  </header>
+
+  <div class="card">
+    <div class="row">
+      <label class="lbl">provider</label>
+      <select id="provider">
+        <option value="openai">OpenAI 兼容（云端）</option>
+        <option value="ollama">Ollama（本地）</option>
+      </select>
+      <input type="text" id="baseUrl" placeholder="https://api.openai.com/v1 或 http://localhost:11434" style="min-width:280px">
+      <input type="password" id="apiKey" placeholder="API key（本地 Ollama 可留空）">
+      <input type="text" id="model" placeholder="model，如 gpt-4o-mini / qwen3:4b">
+    </div>
+    <div class="row" style="margin-top:10px">
+      <label class="lbl">profile</label>
+      <span id="profiles" class="row" style="gap:8px"></span>
+      <label class="lbl" style="margin-left:12px">强度</label>
+      <span class="seg" id="strength">
+        <button data-v="polish">polish</button>
+        <button data-v="standard" class="on">standard</button>
+        <button data-v="expand">expand</button>
+      </span>
+    </div>
+    <div class="hint" id="profileHint"></div>
+  </div>
+
+  <div class="card">
+    <textarea id="input" placeholder="把模糊的想法丢进来，比如：帮我做一个展示我家狗的网站　（⌘/Ctrl + Enter 增强）"></textarea>
+    <div class="row">
+      <button class="boost" id="go">✨ 增强</button>
+      <button class="btn" id="cancelBtn" style="display:none">取消</button>
+      <span class="hint">输入框原文始终保留在左侧，随时可对照或还原</span>
+    </div>
+    <div class="banner" id="banner"></div>
+  </div>
+
+  <div class="panes">
+    <div class="pane">
+      <h3>原始输入</h3>
+      <div class="body dimbox" id="origOut">—</div>
+    </div>
+    <div class="pane">
+      <h3>增强结果</h3>
+      <div class="body" id="outOut">—</div>
+      <div class="actions">
+        <button class="btn" id="copyBtn" disabled>复制</button>
+        <button class="btn" id="revertBtn" disabled>还原输入框</button>
+      </div>
+      <div class="badges" id="badges"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { enhance, checkRules, parseProfile, PromptBoostError } from '/packages/core/src/index.js';
+import { createOpenAIProvider } from '/packages/providers/src/openai.js';
+import { createOllamaProvider } from '/packages/providers/src/ollama.js';
+
+const $ = (id) => document.getElementById(id);
+const els = {
+  provider: $('provider'), baseUrl: $('baseUrl'), apiKey: $('apiKey'), model: $('model'),
+  input: $('input'), go: $('go'), cancel: $('cancelBtn'), out: $('outOut'), orig: $('origOut'),
+  badges: $('badges'), banner: $('banner'), latency: $('latency'),
+  copy: $('copyBtn'), revert: $('revertBtn'), profiles: $('profiles'), hint: $('profileHint')
+};
+
+const PROFILE_NAMES = ['coding-agent', 'writing', 'image-gen'];
+let profiles = {};
+let currentProfile = 'coding-agent';
+let currentStrength = 'standard';
+let lastResult = null;
+let abortCtrl = null;
+
+/* config persistence — key never leaves this browser (PRD §5.4) */
+for (const [id, key] of [['baseUrl', 'baseUrl'], ['apiKey', 'apiKey'], ['model', 'model'], ['provider', 'provider']]) {
+  els[id].value = localStorage.getItem(`pb.${key}`) ?? '';
+  els[id].addEventListener('change', () => localStorage.setItem(`pb.${key}`, els[id].value.trim()));
+}
+els.provider.addEventListener('change', () => {
+  if (els.provider.value === 'ollama' && !els.baseUrl.value) els.baseUrl.value = 'http://localhost:11434';
+  if (els.provider.value === 'ollama') { els.model.placeholder = 'qwen3:4b'; els.apiKey.placeholder = '本地 Ollama 可留空'; }
+});
+
+/* profiles: fetched and parsed with the same parser the CLI uses */
+for (const name of PROFILE_NAMES) {
+  const chip = document.createElement('span');
+  chip.className = 'chip' + (name === currentProfile ? ' on' : '');
+  chip.textContent = name;
+  chip.onclick = () => {
+    currentProfile = name;
+    for (const c of els.profiles.children) c.classList.toggle('on', c === chip);
+    els.hint.textContent = profiles[name] ? `${profiles[name].domain} · 输出上限 ${profiles[name].maxChars} 字符` : '';
+  };
+  els.profiles.appendChild(chip);
+  fetch(`/profiles/${name}.md`).then((r) => r.text()).then((md) => { profiles[name] = parseProfile(md); chip.onclick(); });
+}
+els.hint.textContent = '';
+
+for (const b of $('strength').children) {
+  b.onclick = () => {
+    currentStrength = b.dataset.v;
+    for (const x of $('strength').children) x.classList.toggle('on', x === b);
+  };
+}
+
+function showError(err) {
+  const cors = err instanceof TypeError && !err.code;
+  els.banner.style.display = 'block';
+  els.banner.innerHTML = cors
+    ? '请求失败：浏览器直连被拦截（CORS / 网络不可达）。Ollama 需以 <code>OLLAMA_ORIGINS=*</code> 启动；云端服务需允许跨域，或改用 CLI / MCP 接入。'
+    : `<code>${err.code ?? 'error'}</code> — ${err.message}`;
+}
+function hideError() { els.banner.style.display = 'none'; }
+
+function buildProvider() {
+  const baseUrl = els.baseUrl.value.trim() || (els.provider.value === 'ollama' ? 'http://localhost:11434' : 'https://api.openai.com/v1');
+  const apiKey = els.apiKey.value.trim() || 'ollama';
+  const model = els.model.value.trim() || (els.provider.value === 'ollama' ? 'qwen3:4b' : 'gpt-4o-mini');
+  return els.provider.value === 'ollama'
+    ? { provider: createOllamaProvider({ baseUrl }), model }
+    : { provider: createOpenAIProvider({ baseUrl, apiKey }), model };
+}
+
+async function runBoost() {
+  const text = els.input.value.trim();
+  if (!text) { els.input.focus(); return; }
+  hideError();
+  const { provider, model } = buildProvider();
+  const profile = profiles[currentProfile];
+  abortCtrl = new AbortController();
+  els.go.disabled = true; els.cancel.style.display = '';
+  els.out.textContent = ''; els.out.classList.add('caret');
+  els.badges.innerHTML = ''; els.copy.disabled = true; els.revert.disabled = true;
+  els.latency.textContent = 'streaming…'; els.latency.classList.remove('on');
+
+  try {
+    const res = await enhance(text, {
+      profile, provider, model,
+      strength: currentStrength,
+      signal: abortCtrl.signal,
+      onDelta: (d) => { els.out.textContent += d; }
+    });
+    els.out.textContent = res.text;
+    els.orig.textContent = res.original;
+    lastResult = res;
+    const rules = checkRules(res.original, res.text, { maxChars: profile?.maxChars ?? 800 });
+    for (const r of rules.results) {
+      const b = document.createElement('span');
+      b.className = `badge ${r.pass ? 'pass' : 'fail'}`;
+      b.textContent = `${r.pass ? '✓' : '✗'} ${r.title}`;
+      b.title = r.detail;
+      els.badges.appendChild(b);
+    }
+    els.copy.disabled = false; els.revert.disabled = false;
+    els.latency.textContent = `${res.meta.ms}ms · ${res.meta.chars} chars`;
+    els.latency.classList.add('on');
+  } catch (err) {
+    if (err?.code === 'aborted') { els.out.textContent = '（已取消，输入框内容未受影响）'; }
+    else showError(err);
+  } finally {
+    els.go.disabled = false; els.cancel.style.display = 'none';
+    els.out.classList.remove('caret');
+    abortCtrl = null;
+  }
+}
+
+els.go.onclick = runBoost;
+els.cancel.onclick = () => abortCtrl?.abort();
+els.input.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); runBoost(); }
+});
+els.copy.onclick = () => { if (lastResult) navigator.clipboard.writeText(lastResult.text); };
+els.revert.onclick = () => { if (lastResult) { els.input.value = lastResult.original; els.input.focus(); } };
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "@prompt-boost/core",
+  "version": "0.1.0",
+  "description": "PromptBoost engine — profile assembly, single-shot LLM call contract, deterministic cleaning and rule assertions. Zero runtime dependencies, browser-safe.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "exports": {
+    ".": "./src/index.js",
+    "./node": "./src/node.js"
+  }
+}

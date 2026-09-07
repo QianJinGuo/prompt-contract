@@ -1,0 +1,10 @@
+{
+  "name": "@prompt-boost/cli",
+  "version": "0.1.0",
+  "description": "pb — one-key prompt enhancement from the terminal",
+  "type": "module",
+  "license": "Apache-2.0",
+  "bin": {
+    "pb": "./bin/pb.js"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "@prompt-boost/providers",
+  "version": "0.1.0",
+  "description": "Provider adapters — OpenAI-compatible SSE and Ollama (with keep_alive model pinning). Fetch-based, browser-safe.",
+  "type": "module",
+  "license": "Apache-2.0"
+}

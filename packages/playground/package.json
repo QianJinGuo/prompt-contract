@@ -1,0 +1,7 @@
+{
+  "name": "@prompt-boost/playground",
+  "version": "0.1.0",
+  "description": "Browser playground — BYOK, streaming, rule badges. Static, zero-build.",
+  "type": "module",
+  "license": "Apache-2.0"
+}
