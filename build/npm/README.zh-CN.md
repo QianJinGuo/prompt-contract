@@ -31,9 +31,6 @@ node packages/playground/serve.js                       # → http://127.0.0.1:8
 
 安装：`npm i -g prompt-contract`；或零安装体验：`npx prompt-contract "你的模糊想法"`。
 
-![Playground 自运行演示：模糊一句话被增强为结构化任务规范，六条规则断言全部通过](https://raw.githubusercontent.com/QianJinGuo/prompt-contract/main/docs/assets/hero-playground.png)
-<sub>Playground 预览——自运行演示（`?demo=1`）对接本地 mock 上游：真实管线输出，六条规则断言全部通过。</sub>
-
 ## 接入真实模型
 
 ```bash

@@ -32,9 +32,6 @@ node packages/playground/serve.js                       # → http://127.0.0.1:8
 
 Install: `npm i -g prompt-contract` — or zero-install: `npx prompt-contract "your vague idea"`.
 
-![Playground running its self-contained demo: a vague request enhanced into a structured task spec, six rule assertions passing](docs/assets/hero-playground.png)
-<sub>Playground preview — the self-running demo (`?demo=1`) against the local mock upstream: actual pipeline output, six rule assertions passing.</sub>
-
 ## Your real model
 
 ```bash
