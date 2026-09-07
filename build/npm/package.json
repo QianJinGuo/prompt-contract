@@ -1,6 +1,6 @@
 {
   "name": "prompt-boost",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "One-key prompt enhancement — turn vague ideas into structured task specs anywhere you type to an AI. CLI + MCP server. Zero dependencies, BYOK, offline-capable (Ollama).",
   "license": "Apache-2.0",
   "type": "module",
