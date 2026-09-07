@@ -7,8 +7,7 @@
 
 English · [简体中文](README.zh-CN.md)
 
-![PromptContract playground running the self-contained demo: a vague one-line request enhanced into a structured task spec, with six rule assertions passing](docs/assets/hero-playground.png)
-<sub>The playground running its self-contained demo (`?demo=1`) against the local mock upstream — actual pipeline output, six rule assertions passing.</sub>
+![PromptContract — a vague one-line request becomes a structured task spec (goal, scope, acceptance criteria, non-goals), verified by six hard rules via `contract check`. Real-LLM latency P50 16.2s; engine adds 0.005ms. CLI · MCP · Playground — zero dependencies, BYOK, offline-capable.](docs/assets/hero-cover.png)
 
 **PromptContract is a deterministic prompt-contract layer for AI coding agents.** It compiles a vague one-line request into a structured task specification — goal, scope, constraints, acceptance criteria — and verifies the result against six hard rules before you ever see it.
 
@@ -32,6 +31,9 @@ node packages/playground/serve.js                       # → http://127.0.0.1:8
 ```
 
 Install: `npm i -g prompt-contract` — or zero-install: `npx prompt-contract "your vague idea"`.
+
+![Playground running its self-contained demo: a vague request enhanced into a structured task spec, six rule assertions passing](docs/assets/hero-playground.png)
+<sub>Playground preview — the self-running demo (`?demo=1`) against the local mock upstream: actual pipeline output, six rule assertions passing.</sub>
 
 ## Your real model
 

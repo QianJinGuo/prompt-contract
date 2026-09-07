@@ -6,11 +6,11 @@
 
 [English](README.md) · 简体中文
 
+![PromptContract——模糊的一句话被编译成结构化任务规范（目标 / 范围 / 验收标准 / 明确不做的事），六条硬规则经 `contract check` 校验。真实 LLM 端到端 P50 16.2s，引擎附加开销 0.005ms。CLI · MCP · Playground——零依赖、BYOK、可离线。](https://raw.githubusercontent.com/QianJinGuo/prompt-contract/main/docs/assets/hero-cover.png)
+
 **PromptContract 是面向 AI 编码 agent 的确定性 prompt 契约层**：把模糊的一句话编译成结构化任务规范（目标 / 范围 / 约束 / 验收标准），并在你看到结果之前用六条硬规则完成校验。
 
 它不是「更聪明的大脑」：思考由你的模型完成，PromptContract 让 agent 的输入变得稳定、可审查、可跨模型与跨工具迁移。
-
-![Playground 自运行演示：模糊一句话被增强为结构化任务规范，六条规则断言全部通过](docs/assets/hero-playground.png)
 
 ## 为什么
 
@@ -30,6 +30,9 @@ node packages/playground/serve.js                       # → http://127.0.0.1:8
 ```
 
 安装：`npm i -g prompt-contract`；或零安装体验：`npx prompt-contract "你的模糊想法"`。
+
+![Playground 自运行演示：模糊一句话被增强为结构化任务规范，六条规则断言全部通过](https://raw.githubusercontent.com/QianJinGuo/prompt-contract/main/docs/assets/hero-playground.png)
+<sub>Playground 预览——自运行演示（`?demo=1`）对接本地 mock 上游：真实管线输出，六条规则断言全部通过。</sub>
 
 ## 接入真实模型
 
