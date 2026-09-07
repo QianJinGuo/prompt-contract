@@ -16,7 +16,7 @@ It is *not* a smarter brain: your model does the thinking, PromptBoost makes the
 
 ## Why PromptBoost
 
-- **Stable agent inputs** — a profile plus hard constraints turn "a website for my dog" into goal / scope / acceptance criteria / explicit non-goals. Fewer retries, less scope drift, no invented tech stacks.
+- **Stable agent inputs** — a profile plus hard constraints turn "a website for my dog" into goal / scope / acceptance criteria / explicit non-goals. Reduced retries and scope drift are hypotheses measured by the task-level harness, not current product claims.
 - **Six deterministic guardrails** — language consistency, enhanced-text-only, length & completeness, expand-don't-answer, no hallucinated tech. Every enhancement can be asserted with `pb check`; the same spec drives templates and tests.
 - **One engine, three surfaces** — a CLI, an MCP server (agent-invoked **tool** + user-invoked **slash prompts**), and a browser playground. All share one zero-dependency core.
 - **Private by architecture** — bring your own key, no server in the middle, no telemetry, offline-capable via Ollama.
@@ -31,7 +31,7 @@ node packages/cli/bin/pb.js "帮我做一个展示我家狗的网站" \
 node packages/playground/serve.js                       # → http://127.0.0.1:8123/  (or ?demo=1 for the self-running demo)
 ```
 
-Once [`prompt-boost`](https://www.npmjs.com/package/prompt-boost) is on npm: `npx prompt-boost "your vague idea"`.
+Once [`@qianjinguo/prompt-boost`](https://www.npmjs.com/package/@qianjinguo/prompt-boost) is on npm: `npx @qianjinguo/prompt-boost "your vague idea"`.
 
 ## Your real model
 
@@ -69,12 +69,13 @@ Community profiles are the main contribution surface — a PR adding `profiles/<
 ## Quality gates — and their honest limits
 
 ```bash
-npm test        # 55 tests: engine units + SSE/ndjson streaming + CLI/MCP e2e against a local mock
+npm test        # 60 tests: engine units + SSE/ndjson streaming + CLI/MCP e2e against a local mock
 npm run eval    # 9 deterministic cases over the six hard-constraint assertions
+npm run eval:tasks -- --format-only  # validate the coding-agent task fixture format gate
 npm run bench   # engine overhead: P50 ≈ 0.005ms (budget < 5ms)
 ```
 
-**What this does and does not prove:** these gates prove the *pipeline* is correct (streaming, cancellation, error codes, MCP handshake) and that outputs pass format constraints. They do **not** yet prove that enhanced prompts improve downstream task outcomes — that is the open validation item, defined as a task-level eval in [docs/ACCEPTANCE.md](docs/ACCEPTANCE.md) (baseline vs enhanced on a real task set: completion rate, retries, scope drift, hallucinations, token cost). We prefer stating that openly over implying otherwise.
+**What this does and does not prove:** these gates prove the *pipeline* is correct (streaming, cancellation, error codes, MCP handshake) and that outputs pass format constraints. The paired task-level harness is documented in [docs/TASK-EVAL.md](docs/TASK-EVAL.md), but no downstream task results are included yet. It therefore makes no claim that enhanced prompts improve completion, retries, scope drift, hallucinations, token cost, or latency.
 
 ## How it works
 
@@ -89,7 +90,7 @@ raw input → script/scenario detect → profile + hard constraints + strength (
 
 - **Shipped:** engine, CLI (`pb` / `check` / `doctor` / `profiles` / `spike-0`), MCP server (tool + zero-key prompts), playground, 3 profiles, eval cases, CI matrix.
 - **Gated:** `pb watch` (global-hotkey resident mode) remains intentionally unavailable. `pb spike-0` measures macOS capture/clipboard safety and dry-run focus eligibility, but never pastes or unlocks watch by itself; see [docs/SPIKE-0.md](docs/SPIKE-0.md).
-- **Open validation:** task-level outcome evaluation (above). Prompt enhancement is a competitive space with built-in features in major products; the durable value we pursue is stable, portable, privacy-preserving agent inputs — and that value is a hypothesis until the task-level eval says otherwise.
+- **Open validation:** task-level outcome evaluation remains an evidence-gathering task. The harness and curated fixture set exist, but PromptBoost's downstream effectiveness is still a hypothesis until a declared runner produces reviewed results.
 - Deferred: animated demo asset, IDE plugins, LLM-as-judge as *one* scorer inside the task-level eval.
 
 ## Layout

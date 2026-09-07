@@ -5,7 +5,7 @@
  * exactly like the repo (zero-dependency guarantee carries over verbatim):
  *
  *   build/npm/
- *     package.json            (name: prompt-boost, bin x3)
+ *     package.json            (name: @qianjinguo/prompt-boost, bin x3)
  *     packages/cli/**         (bin/pb.js — imports ../../core/src/*)
  *     packages/core/src/**
  *     packages/mcp-server/**  (bin + src — imports ../../core/src/*)
@@ -40,8 +40,12 @@ for (const src of [
 }
 
 const pkg = {
-  name: 'prompt-boost',
+  // Scoped name: npm's typosquat policy blocks the unscoped "prompt-boost"
+  // (too similar to the existing "promptboost" package), and a scope matching
+  // the npm username is exempt from that check.
+  name: '@qianjinguo/prompt-boost',
   version: '0.1.1',
+  publishConfig: { access: 'public' },
   description: 'One-key prompt enhancement — turn vague ideas into structured task specs anywhere you type to an AI. CLI + MCP server. Zero dependencies, BYOK, offline-capable (Ollama).',
   license: 'Apache-2.0',
   type: 'module',

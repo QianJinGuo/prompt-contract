@@ -14,7 +14,7 @@
 
 ## 为什么
 
-- **稳定的 agent 输入**——profile + 硬约束把「帮我做个网站」编译成目标 / 范围 / 验收标准 / 明确不做的事，减少重试与范围漂移，不凭空引入技术栈
+- **稳定的 agent 输入**——profile + 硬约束把「帮我做个网站」编译成目标 / 范围 / 验收标准 / 明确不做的事；重试与范围漂移是否减少，仍须由任务级 harness 验证，当前不作产品结论
 - **六条确定性护栏**——语言一致性、只输出增强文本、长度与完整性、扩写而非回答、无幻觉技术栈；`pb check` 随时可断言，模板与测试共用同一份规格
 - **一个引擎、三个形态**——CLI、MCP server（agent 调用的 tool + 用户调用的斜杠 prompts）、浏览器 Playground，共享同一个零依赖内核
 - **隐私即架构**——BYOK、无中间服务、零遥测，Ollama 全本地可用
@@ -29,7 +29,7 @@ node packages/cli/bin/pb.js "帮我做一个展示我家狗的网站" \
 node packages/playground/serve.js                       # → http://127.0.0.1:8123/（?demo=1 为自运行演示）
 ```
 
-发布到 npm 后可用 `npx prompt-boost "你的模糊想法"` 零安装体验。
+发布到 npm 后可用 `npx @qianjinguo/prompt-boost "你的模糊想法"` 零安装体验。
 
 ## 接入真实模型
 
@@ -53,18 +53,19 @@ pb "帮我写一封请假邮件"
 ## 质量门禁与诚实边界
 
 ```bash
-npm test        # 55 项：引擎单测 + SSE/ndjson 流式 + CLI/MCP 端到端（对本地 mock）
+npm test        # 60 项：引擎单测 + SSE/ndjson 流式 + CLI/MCP 端到端（对本地 mock）
 npm run eval    # 9 个确定性用例（六条硬约束断言）
+npm run eval:tasks -- --format-only  # 校验 coding-agent 任务 fixture 的格式门禁
 npm run bench   # 引擎自身开销 P50 ≈ 0.005ms（预算 <5ms）
 ```
 
-**这些证明的是管线正确与格式合规，不证明「增强后的 prompt 提升了下游任务效果」**——后者是尚未完成的开放验证项（任务级评测协议见 [docs/ACCEPTANCE.md](docs/ACCEPTANCE.md)）。我们选择把这一点写清楚，而不是含糊其辞。
+**这些证明的是管线正确与格式合规，不证明「增强后的 prompt 提升了下游任务效果」**。任务级 harness 与 fixture 见 [docs/TASK-EVAL.md](docs/TASK-EVAL.md)，但仓库尚未包含下游任务结果，因此不作有效性结论。
 
 ## 状态与路线图（诚实版）
 
 - **已交付**：引擎、CLI（含 `spike-0`）、MCP server（tool + 零 key prompts）、Playground、3 个 profiles、eval 用例、CI 矩阵
 - **被门控**：`pb watch`（全局热键常驻）仍不可用。`pb spike-0` 只测 macOS 取词、剪贴板恢复和焦点校验的 dry-run，不发送粘贴，也不会自行解锁 watch；见 [docs/SPIKE-0.md](docs/SPIKE-0.md)
-- **开放验证**：任务级效果评测；prompt 增强赛道竞品众多且大厂在内置，我们追求的长期价值（稳定、可迁移、隐私优先的 agent 输入）在评测给出数据之前只是假设
+- **开放验证**：任务级效果评测的 harness 与任务 fixture 已交付，但还没有声明 runner 产生并复核结果；长期价值在此之前仍是假设
 - **推迟**：动画 demo 资产、IDE 插件、LLM-as-judge（作为任务级评测中的评分器之一）
 
 ## 贡献与许可
