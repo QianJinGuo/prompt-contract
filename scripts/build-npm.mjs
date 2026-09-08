@@ -46,7 +46,7 @@ const pkg = {
   // matching the npm username is exempt from the similarity check, and the
   // "prompt-contract" bin key keeps `npx @qianjinguo/prompt-contract` working.
   name: '@qianjinguo/prompt-contract',
-  version: '0.2.0',
+  version: '0.2.1',
   publishConfig: { access: 'public' },
   description: 'One-key prompt enhancement — turn vague ideas into structured task specs anywhere you type to an AI. CLI + MCP server. Zero dependencies, BYOK, offline-capable (Ollama).',
   license: 'Apache-2.0',
