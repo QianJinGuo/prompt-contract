@@ -30,7 +30,7 @@ node packages/cli/bin/contract.js "帮我做一个展示我家狗的网站" \
 node packages/playground/serve.js                       # → http://127.0.0.1:8123/  (or ?demo=1 for the self-running demo)
 ```
 
-Install: `npm i -g prompt-contract` — or zero-install: `npx prompt-contract "your vague idea"`.
+Install: `npm i -g @qianjinguo/prompt-contract` — or zero-install: `npx @qianjinguo/prompt-contract "your vague idea"`.
 
 ## Your real model
 

@@ -29,7 +29,7 @@ node packages/cli/bin/contract.js "帮我做一个展示我家狗的网站" \
 node packages/playground/serve.js                       # → http://127.0.0.1:8123/（?demo=1 为自运行演示）
 ```
 
-安装：`npm i -g prompt-contract`；或零安装体验：`npx prompt-contract "你的模糊想法"`。
+安装：`npm i -g @qianjinguo/prompt-contract`；或零安装体验：`npx @qianjinguo/prompt-contract "你的模糊想法"`。
 
 ## 接入真实模型
 

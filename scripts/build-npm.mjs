@@ -5,13 +5,13 @@
  * exactly like the repo (zero-dependency guarantee carries over verbatim):
  *
  *   build/npm/
- *     package.json            (name: @qianjinguo/prompt-boost, bin x3)
- *     packages/cli/**         (bin/pb.js — imports ../../core/src/*)
+ *     package.json            (name: @qianjinguo/prompt-contract, bin x3)
+ *     packages/cli/**         (bin/contract.js — imports ../../core/src/*)
  *     packages/core/src/**
  *     packages/mcp-server/**  (bin + src — imports ../../core/src/*)
  *     packages/providers/src/**
  *     profiles/*.md           (found by the upward directory walk in core/src/node.js)
- *     README.md README.en.md LICENSE
+ *     README.md README.zh-CN.md LICENSE
  */
 import { rmSync, mkdirSync, cpSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
@@ -40,29 +40,31 @@ for (const src of [
 }
 
 const pkg = {
-  // Scoped name: npm's typosquat policy blocks the unscoped "prompt-boost"
-  // (too similar to the existing "promptboost" package), and a scope matching
-  // the npm username is exempt from that check.
-  name: '@qianjinguo/prompt-boost',
-  version: '0.1.1',
+  // Scoped name: npm blocks unscoped names here — "prompt-boost" via the
+  // typosquat policy (too similar to the existing "promptboost" package) and
+  // "prompt-contract" because another publisher already owns it. A scope
+  // matching the npm username is exempt from the similarity check, and the
+  // "prompt-contract" bin key keeps `npx @qianjinguo/prompt-contract` working.
+  name: '@qianjinguo/prompt-contract',
+  version: '0.2.0',
   publishConfig: { access: 'public' },
   description: 'One-key prompt enhancement — turn vague ideas into structured task specs anywhere you type to an AI. CLI + MCP server. Zero dependencies, BYOK, offline-capable (Ollama).',
   license: 'Apache-2.0',
   type: 'module',
   engines: { node: '>=20' },
   bin: {
-    'prompt-boost': './packages/cli/bin/pb.js',
-    pb: './packages/cli/bin/pb.js',
-    'prompt-boost-mcp': './packages/mcp-server/bin/prompt-boost-mcp.js'
+    'prompt-contract': './packages/cli/bin/contract.js',
+    contract: './packages/cli/bin/contract.js',
+    'prompt-contract-mcp': './packages/mcp-server/bin/prompt-contract-mcp.js'
   },
   keywords: [
     'prompt', 'prompt-engineering', 'llm', 'cli', 'mcp', 'model-context-protocol',
     'ai-agents', 'ollama', 'openai', 'developer-tools'
   ],
-  repository: { type: 'git', url: 'git+https://github.com/QianJinGuo/prompt-boost.git' },
-  homepage: 'https://github.com/QianJinGuo/prompt-boost#readme',
-  bugs: 'https://github.com/QianJinGuo/prompt-boost/issues',
-  files: ['packages/', 'profiles/', 'README.md', 'README.en.md', 'LICENSE']
+  repository: { type: 'git', url: 'git+https://github.com/QianJinGuo/prompt-contract.git' },
+  homepage: 'https://github.com/QianJinGuo/prompt-contract#readme',
+  bugs: 'https://github.com/QianJinGuo/prompt-contract/issues',
+  files: ['packages/', 'profiles/', 'README.md', 'README.zh-CN.md', 'LICENSE']
 };
 
 writeFileSync(resolve(out, 'package.json'), JSON.stringify(pkg, null, 2) + '\n');
