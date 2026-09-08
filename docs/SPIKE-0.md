@@ -1,6 +1,6 @@
 # Spike-0: macOS capture/restore diagnostic
 
-Spike-0 is the only `watch`-related implementation in this repository. It measures the macOS capture link and keeps the paste-back step as a validation-only dry run. `contract watch` remains unavailable even when a report passes.
+Spike-0 is the only `watch`-related implementation in this repository. It measures the macOS capture link and keeps the paste-back step as a validation-only dry run. `prompt-contract watch` remains unavailable even when a report passes.
 
 ## Run it
 
@@ -83,4 +83,4 @@ Apple’s permission descriptions are documented in [Accessibility access](https
 - Clipboard preservation is exact for text-only pasteboards. Rich clipboard preservation is not implemented; those attempts fail closed.
 - The report records dry-run eligibility, not actual replacement correctness or end-to-end LLM latency.
 - A terminal/automation harness can steal focus. Treat such runs as evidence of focus drift, not as a passing app result; run the diagnostic with the target app actually frontmost.
-- `contract watch` stays gated by D7. A passing JSON report is evidence for a later implementation decision, not an authorization or implementation of resident watch mode.
+- `prompt-contract watch` stays gated by D7. A passing JSON report is evidence for a later implementation decision, not an authorization or implementation of resident watch mode.

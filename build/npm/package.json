@@ -1,21 +1,22 @@
 {
-  "name": "prompt-contract",
+  "name": "@qianjinguo/prompt-contract",
   "version": "0.2.0",
-  "description": "pc — one-key prompt enhancement: turn vague ideas into structured task specs anywhere you type to an AI. CLI + MCP server. Zero dependencies, BYOK, offline-capable (Ollama).",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "One-key prompt enhancement — turn vague ideas into structured task specs anywhere you type to an AI. CLI + MCP server. Zero dependencies, BYOK, offline-capable (Ollama).",
   "license": "Apache-2.0",
   "type": "module",
   "engines": {
     "node": ">=20"
   },
   "bin": {
-    "contract": "./packages/cli/bin/contract.js",
     "prompt-contract": "./packages/cli/bin/contract.js",
-    "prompt-contract-mcp": "./packages/mcp-server/bin/prompt-contract-mcp.js",
-    "pb": "./packages/cli/bin/contract.js"
+    "contract": "./packages/cli/bin/contract.js",
+    "prompt-contract-mcp": "./packages/mcp-server/bin/prompt-contract-mcp.js"
   },
   "keywords": [
     "prompt",
-    "prompt-contract",
     "prompt-engineering",
     "llm",
     "cli",
@@ -36,7 +37,7 @@
     "packages/",
     "profiles/",
     "README.md",
-    "README.en.md",
+    "README.zh-CN.md",
     "LICENSE"
   ]
 }

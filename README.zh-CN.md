@@ -15,7 +15,7 @@
 ## 为什么
 
 - **稳定的 agent 输入**——profile + 硬约束把「帮我做个网站」编译成目标 / 范围 / 验收标准 / 明确不做的事；重试与范围漂移是否减少，仍须由任务级 harness 验证，当前不作产品结论
-- **六条确定性护栏**——语言一致性、只输出增强文本、长度与完整性、扩写而非回答、无幻觉技术栈；`contract check` 随时可断言，模板与测试共用同一份规格
+- **六条确定性护栏**——语言一致性、只输出增强文本、长度与完整性、扩写而非回答、无幻觉技术栈；`prompt-contract check` 随时可断言，模板与测试共用同一份规格
 - **一个引擎、三个形态**——CLI、MCP server（agent 调用的 tool + 用户调用的斜杠 prompts）、浏览器 Playground，共享同一个零依赖内核
 - **隐私即架构**——BYOK、无中间服务、零遥测，Ollama 全本地可用
 
@@ -35,10 +35,10 @@ node packages/playground/serve.js                       # → http://127.0.0.1:8
 
 ```bash
 export CONTRACT_API_KEY=sk-xxx CONTRACT_MODEL=gpt-4o-mini   # 任意 OpenAI 兼容端点（DeepSeek/Qwen/GLM/vLLM…）
-contract "A website for my dog"
+prompt-contract "A website for my dog"
 
 export CONTRACT_PROVIDER=ollama CONTRACT_MODEL=qwen3:4b     # 全本地；keep_alive 把模型钉在内存
-contract "帮我写一封请假邮件"
+prompt-contract "帮我写一封请假邮件"
 ```
 
 或一次写入 `~/.prompt-contract/config.json`。
@@ -64,7 +64,7 @@ npm run bench   # 引擎自身开销 P50 ≈ 0.005ms（预算 <5ms）
 ## 状态与路线图（诚实版）
 
 - **已交付**：引擎、CLI（含 `spike-0`）、MCP server（tool + 零 key prompts）、Playground、3 个 profiles、eval 用例、CI 矩阵
-- **被门控**：`contract watch`（全局热键常驻）仍不可用。`contract spike-0` 只测 macOS 取词、剪贴板恢复和焦点校验的 dry-run，不发送粘贴，也不会自行解锁 watch；见 [docs/SPIKE-0.md](docs/SPIKE-0.md)
+- **被门控**：`prompt-contract watch`（全局热键常驻）仍不可用。`prompt-contract spike-0` 只测 macOS 取词、剪贴板恢复和焦点校验的 dry-run，不发送粘贴，也不会自行解锁 watch；见 [docs/SPIKE-0.md](docs/SPIKE-0.md)
 - **开放验证**：任务级效果评测的 harness 与任务 fixture 已交付，但还没有声明 runner 产生并复核结果；长期价值在此之前仍是假设
 - **推迟**：动画 demo 资产、IDE 插件、LLM-as-judge（作为任务级评测中的评分器之一）
 

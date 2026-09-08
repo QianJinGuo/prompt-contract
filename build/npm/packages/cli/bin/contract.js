@@ -25,17 +25,17 @@ if (basename(process.argv[1] || '') === 'contract') {
 }
 
 const VERSION = '0.2.0';
-const USAGE = `contract — one-key prompt enhancement (PromptContract v${VERSION})
+const USAGE = `prompt-contract — one-key prompt enhancement (PromptContract v${VERSION})
 
 Usage:
-  contract "build me a website for my dog"     enhance a prompt (prints enhanced text to stdout)
-  cat prompt.txt | contract                    enhance from stdin
-  contract profiles                            list built-in profiles
-  contract check --original "..." --enhanced "..."
+  prompt-contract "build me a website for my dog"     enhance a prompt (prints enhanced text to stdout)
+  cat prompt.txt | prompt-contract                    enhance from stdin
+  prompt-contract profiles                            list built-in profiles
+  prompt-contract check --original "..." --enhanced "..."
                                          run the six hard-constraint rule assertions
-  contract doctor                              verify config, provider reachability, profiles
-  contract spike-0                             macOS-only capture/restore compatibility diagnostic (dry-run)
-  contract watch                               NOT BUILT — gated by decision D7 (Spike-0 first); see docs/SPIKE-0.md
+  prompt-contract doctor                              verify config, provider reachability, profiles
+  prompt-contract spike-0                             macOS-only capture/restore compatibility diagnostic (dry-run)
+  prompt-contract watch                               NOT BUILT — gated by decision D7 (Spike-0 first); see docs/SPIKE-0.md
 
 Options:
   -p, --profile <name>     scenario profile (default: coding-agent)
