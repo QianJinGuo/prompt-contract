@@ -4,8 +4,9 @@
  */
 import { PromptContractError } from '../../core/src/errors.js';
 
-/** Combine caller signal + internal timeout. Caller abort must always stay effective (ADR-017). */
-function withTimeout(signal, timeoutMs) {
+/** Combine caller signal + internal timeout. Caller abort must always stay effective (ADR-017).
+ *  Shared by the anthropic provider (same streaming-shape needs). */
+export function withTimeout(signal, timeoutMs) {
   const timeoutCtrl = new AbortController();
   const timer = timeoutMs
     ? setTimeout(() => timeoutCtrl.abort(new DOMException('timeout', 'TimeoutError')), timeoutMs)

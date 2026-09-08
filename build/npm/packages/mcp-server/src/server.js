@@ -10,6 +10,7 @@
 import { enhance, hardConstraints, STRENGTHS, PromptContractError, normalizeError } from '../../core/src/index.js';
 import { loadProfiles, loadProfile, resolveConfig } from '../../core/src/node.js';
 import { createOpenAIProvider } from '../../providers/src/openai.js';
+import { createAnthropicProvider } from '../../providers/src/anthropic.js';
 import { createOllamaProvider } from '../../providers/src/ollama.js';
 
 const SERVER_INFO = { name: 'prompt-contract', version: '0.1.0' };
@@ -131,7 +132,9 @@ export async function serve({ stdin = process.stdin, stdout = process.stdout, st
     const config = resolveConfig({ provider: flag('--provider'), baseUrl: flag('--base-url'), apiKey: flag('--api-key'), model: flag('--model'), configPath: flag('--config') });
     const provider = config.provider === 'ollama'
       ? createOllamaProvider({ baseUrl: config.baseUrl })
-      : createOpenAIProvider({ baseUrl: config.baseUrl, apiKey: config.apiKey });
+      : config.provider === 'anthropic'
+        ? createAnthropicProvider({ baseUrl: config.baseUrl, apiKey: config.apiKey })
+        : createOpenAIProvider({ baseUrl: config.baseUrl, apiKey: config.apiKey });
     provider.warmup({ model: config.model }).catch(() => {}); // §7.6-1: prewarm, best effort
     runtime = { config, provider };
     return runtime;

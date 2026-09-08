@@ -33,7 +33,7 @@ function runPb(args, { env = {}, input } = {}) {
 
 const OPENAI_ENV = { CONTRACT_PROVIDER: 'openai', CONTRACT_BASE_URL: `${base}/v1`, CONTRACT_API_KEY: 'test-key-123', CONTRACT_MODEL: 'mock-model' };
 
-test('e2e: contract "..." enhances via openai-compatible upstream and passes rule assertions', async () => {
+test('e2e: prompt-contract "..." enhances via openai-compatible upstream and passes rule assertions', async () => {
   const { code, stdout, stderr } = await runPb(['--json', '--provider', 'openai', '--base-url', `${base}/v1`, '--api-key', 'test-key-123', '--model', 'mock-model', '帮我做一个展示我家狗的网站']);
   assert.equal(code, 0, stderr);
   const out = JSON.parse(stdout);
@@ -53,13 +53,13 @@ test('e2e: contract reads prompt from stdin (pipe mode)', async () => {
   assert.equal(stdout.trim(), ZH_RESULT);
 });
 
-test('contract profiles lists the three built-in profiles', async () => {
+test('prompt-contract profiles lists the three built-in profiles', async () => {
   const { code, stdout } = await runPb(['profiles']);
   assert.equal(code, 0);
   for (const name of ['coding-agent', 'writing', 'image-gen']) assert.match(stdout, new RegExp(name));
 });
 
-test('contract check exits 1 on a failing pair (gate mode) and 0 on a good pair', async () => {
+test('prompt-contract check exits 1 on a failing pair (gate mode) and 0 on a good pair', async () => {
   const bad = await runPb(['check', '--original', '做个博客', '--enhanced', '好的，以下是实现方案：先安装依赖。']);
   assert.equal(bad.code, 1);
   assert.match(bad.stderr, /FAIL/);
@@ -67,13 +67,31 @@ test('contract check exits 1 on a failing pair (gate mode) and 0 on a good pair'
   assert.equal(good.code, 0, good.stderr);
 });
 
-test('contract watch is gated by decision D7', async () => {
+test('prompt-contract watch refuses to start without Spike-0 evidence or --force (D7 evidence gate)', async () => {
   const { code, stderr } = await runPb(['watch']);
   assert.equal(code, 2);
-  assert.match(stderr, /D7/);
+  assert.match(stderr, /prompt-contract watch/);
+  assert.match(stderr, /spike-0|--force|macOS-only/);
 });
 
-test('contract spike-0 exposes the macOS dry-run diagnostic', async () => {
+test('contract help documents the resident watch mode', async () => {
+  const { code, stdout } = await runPb(['--help']);
+  assert.equal(code, 0);
+  assert.match(stdout, /prompt-contract watch/);
+  assert.match(stdout, /--hotkey/);
+  assert.match(stdout, /--dry-run/);
+});
+
+test('e2e: contract --provider anthropic talks the Messages protocol via the local mock', async () => {
+  const { code, stdout, stderr } = await runPb(['--json', '--provider', 'anthropic', '--base-url', base, '--api-key', 'test-key-123', '--model', 'mock-model', '帮我做一个展示我家狗的网站']);
+  assert.equal(code, 0, stderr);
+  const out = JSON.parse(stdout);
+  assert.equal(out.original, '帮我做一个展示我家狗的网站');
+  assert.equal(out.enhanced, ZH_RESULT);
+  assert.equal(out.meta.model, 'mock-model');
+});
+
+test('prompt-contract spike-0 exposes the macOS dry-run diagnostic', async () => {
   const { code, stdout } = await runPb(['spike-0', '--help']);
   assert.equal(code, 0);
   assert.match(stdout, /dry-run/);
@@ -82,7 +100,7 @@ test('contract spike-0 exposes the macOS dry-run diagnostic', async () => {
   assert.match(stdout, /iTerm/);
 });
 
-test('contract doctor reports provider problems honestly', async () => {
+test('prompt-contract doctor reports provider problems honestly', async () => {
   const { code, stderr } = await runPb(['doctor', '--provider', 'openai', '--base-url', `${base}/v1`, '--api-key', 'wrong-key', '--model', 'mock-model']);
   assert.equal(code, 1);
   assert.match(stderr, /FAIL/);

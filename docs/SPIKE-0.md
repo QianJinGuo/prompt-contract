@@ -1,6 +1,6 @@
 # Spike-0: macOS capture/restore diagnostic
 
-Spike-0 is the only `watch`-related implementation in this repository. It measures the macOS capture link and keeps the paste-back step as a validation-only dry run. `prompt-contract watch` remains unavailable even when a report passes.
+Spike-0 measures the macOS capture link and keeps the paste-back step as a validation-only dry run. Its passing report is the evidence `prompt-prompt-contract watch` requires at startup (decision D7); the report itself never authorizes or unlocks anything.
 
 ## Run it
 
@@ -33,7 +33,7 @@ Each attempt follows this order:
 1. Read the current plain-text pasteboard with `pbpaste`.
 2. Inspect `clipboard info`. If any non-text type is present, stop before ⌘C; the diagnostic does not rewrite rich clipboard data that it cannot restore.
 3. Record the foreground process, bundle identifier, PID, front-window title, and `AXFocusedUIElement` identity attributes through System Events.
-4. Send ⌘C only, read the selected text, and record the post-capture foreground/focus identity.
+4. Send ⌘C only, read the selected text — polling until the pasteboard actually differs from the pre-copy snapshot, so a slow ⌘C can never echo the stale clipboard back as the "selection" — and record the post-capture foreground/focus identity.
 5. Restore the original plain-text clipboard with `pbcopy` in a `finally` path and verify an exact text match.
 6. Record the current focus and report whether paste-back would be allowed. No ⌘V is sent.
 
@@ -83,4 +83,4 @@ Apple’s permission descriptions are documented in [Accessibility access](https
 - Clipboard preservation is exact for text-only pasteboards. Rich clipboard preservation is not implemented; those attempts fail closed.
 - The report records dry-run eligibility, not actual replacement correctness or end-to-end LLM latency.
 - A terminal/automation harness can steal focus. Treat such runs as evidence of focus drift, not as a passing app result; run the diagnostic with the target app actually frontmost.
-- `prompt-contract watch` stays gated by D7. A passing JSON report is evidence for a later implementation decision, not an authorization or implementation of resident watch mode.
+- `prompt-prompt-contract watch` consumes a passing report as its startup evidence gate (`prompt-prompt-contract watch --report <file>`, or `--force` to override). The report itself remains a compatibility measurement, not an authorization.

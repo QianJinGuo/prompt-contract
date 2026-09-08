@@ -189,6 +189,42 @@ test('validatePasteBackDryRun tolerates a transiently unavailable window title',
   assert.equal(result.executed, false);
 });
 
+test('captureSelectedText polls until a slow ⌘C actually lands', async () => {
+  // The first post-copy read still sees the pre-copy clipboard (⌘C in flight);
+  // the copy lands before the fourth read overall.
+  const slow = fakeAdapter();
+  let reads = 0;
+  slow.readClipboard = async () => {
+    reads += 1;
+    slow.state.events.push('readClipboard');
+    if (reads <= 3) return 'keep this clipboard'; // ⌘C not landed yet
+    return slow.state.clipboard;                  // then reflect the real state
+  };
+
+  const result = await captureSelectedText(slow, { settleMs: 0 });
+
+  assert.equal(result.selectedText, 'selected prompt');
+  assert.equal(result.selectedTextCaptured, true);
+  assert.equal(result.clipboardRestored, true);
+  assert.equal(result.clipboardRestoreVerified, true);
+});
+
+test('captureSelectedText never mistakes a never-changing clipboard for a selection', async () => {
+  // ⌘C never lands (e.g. focus stole nothing): the stale clipboard must yield
+  // an empty selection, not be echoed back as the "captured" text.
+  const noOpCopy = {
+    ...fakeAdapter({ selectedText: 'keep this clipboard' }),
+    async copySelection() { this.state.events.push('copySelection'); }, // clipboard unchanged
+  };
+
+  const result = await captureSelectedText(noOpCopy, { settleMs: 0 });
+
+  assert.equal(result.selectedText, null);
+  assert.equal(result.selectedTextCaptured, false);
+  assert.equal(result.clipboardRestored, true);
+  assert.equal(noOpCopy.state.clipboard, 'keep this clipboard');
+});
+
 test('buildCompatibilityReport applies the Spike-0 cohort thresholds', () => {
   const runs = [];
   for (const target of ['Chrome', 'PyCharm', 'iTerm']) {

@@ -36,6 +36,9 @@ export const APP_TARGETS = Object.freeze({
 });
 
 const COPY_SCRIPT = 'tell application "System Events" to keystroke "c" using {command down}';
+// Used only by prompt-contract watch. The Spike-0 diagnostic itself never issues ⌘V; its
+// safety contract is enforced in captureSelectedText/validatePasteBackDryRun.
+const PASTE_SCRIPT = 'tell application "System Events" to keystroke "v" using {command down}';
 
 // The report deliberately excludes AXValue: it can contain the user's prompt or
 // other sensitive text. These attributes are enough to conservatively detect a
@@ -212,6 +215,12 @@ export function createMacOSAdapter({ run = runCommand } = {}) {
       if (result.code !== 0) throw commandError('osascript-copy', result);
     },
 
+    async pasteSelection() {
+      const result = await run('/usr/bin/osascript', ['-e', PASTE_SCRIPT]);
+      if (result.error) throw result.error;
+      if (result.code !== 0) throw commandError('osascript-paste', result);
+    },
+
     async getFocusIdentity() {
       const result = await run('/usr/bin/osascript', ['-e', CONTEXT_SCRIPT], { timeoutMs: 5000 });
       if (result.error) throw result.error;
@@ -275,7 +284,7 @@ function fingerprintForContext(context) {
   return createHash('sha256').update(fields.join('\u001f')).digest('hex').slice(0, 16);
 }
 
-function sameFocusIdentity(left, right) {
+export function sameFocusIdentity(left, right) {
   if (!left || !right) return false;
   const appStable = normalized(left.processName) === normalized(right.processName)
     && normalized(left.bundleId) === normalized(right.bundleId)
@@ -309,8 +318,17 @@ export async function captureSelectedText(adapter, { settleMs = 75 } = {}) {
     clipboardUntouched = false;
     await adapter.copySelection();
     await adapter.sleep(settleMs);
-    const copiedText = await adapter.readClipboard();
-    selectedText = typeof copiedText === 'string' && copiedText.trim() ? copiedText : null;
+    let copiedText = await adapter.readClipboard();
+    // ⌘C is delivered asynchronously: a read that still shows the pre-copy
+    // clipboard means the copy has not landed — poll briefly instead of
+    // mistaking the stale clipboard for the selection. A read identical to the
+    // pre-copy clipboard after polling reports an empty selection (the
+    // clipboard fallback then covers the intentional selection==clipboard case).
+    for (let polls = 0; copiedText === originalClipboard && polls < 6; polls++) {
+      await adapter.sleep(60);
+      copiedText = await adapter.readClipboard();
+    }
+    selectedText = typeof copiedText === 'string' && copiedText.trim() && copiedText !== originalClipboard ? copiedText : null;
     contextAfterCapture = await adapter.getFocusIdentity();
   } catch (captureError) {
     error = captureError;
@@ -457,7 +475,7 @@ export function buildCompatibilityReport({
       pass: reasons.length === 0,
       reasons,
       watchGate: 'closed',
-      note: 'A dry-run cannot prove actual paste landing; contract watch remains gated until a separate implementation decision.',
+      note: 'A dry-run cannot prove actual paste landing; this report is evidence for prompt-contract watch, never an authorization by itself.',
     },
   };
 }
@@ -575,7 +593,7 @@ export function formatSpike0Summary(report) {
     `capture ${summary.captureSuccesses}/${summary.attempts} (${summary.captureSuccessRate})`,
     `clipboard restore ${summary.clipboardRestoreSuccesses}/${summary.attempts} (${summary.clipboardRestoreSuccessRate})`,
     `dry-run paste-back eligibility ${summary.dryRunPasteBackSuccesses}/${summary.attempts} (${summary.dryRunPasteBackRate})`,
-    report.decision.reasons.length ? `reasons: ${report.decision.reasons.join('; ')}` : 'thresholds met; contract watch remains gated',
+    report.decision.reasons.length ? `reasons: ${report.decision.reasons.join('; ')}` : 'thresholds met; evidence usable by prompt-contract watch',
   ].join('\n');
 }
 

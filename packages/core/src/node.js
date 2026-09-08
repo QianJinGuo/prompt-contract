@@ -55,24 +55,48 @@ export function loadProfile(name, explicitDir) {
 }
 
 /**
- * Config resolution order: explicit flags > env (PB_*) > config file (CONTRACT_CONFIG or ~/.prompt-contract/config.json).
+ * Vendor presets — convenience sugar over the OpenAI-compatible protocol (openai.js already
+ * speaks it): `"provider": "deepseek"` resolves the known base URL and a suggested default
+ * small/fast model. Explicit flags/env/config always win over preset values. Model ids are
+ * best-effort defaults maintained per vendor naming and can always be overridden with
+ * CONTRACT_MODEL/--model; presets deliberately stay a data table, not an SDK dependency.
+ */
+export const PROVIDER_PRESETS = Object.freeze({
+  deepseek: { baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-chat' },
+  qwen: { baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-plus' },
+  glm: { baseUrl: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-4-flash' },
+  moonshot: { baseUrl: 'https://api.moonshot.cn/v1', model: 'kimi-k2-turbo-preview' },
+  groq: { baseUrl: 'https://api.groq.com/openai/v1', model: 'llama-3.3-70b-versatile' },
+  openrouter: { baseUrl: 'https://openrouter.ai/api/v1', model: 'openai/gpt-4o-mini' },
+  lmstudio: { baseUrl: 'http://127.0.0.1:1234/v1', keyless: true },
+  anthropic: { baseUrl: 'https://api.anthropic.com', model: 'claude-haiku-4-5' },
+});
+
+/**
+ * Config resolution order: explicit flags > env (CONTRACT_*) > config file (CONTRACT_CONFIG or ~/.prompt-contract/config.json).
  * Defaults follow PRD §3.2: local Ollama if nothing else is configured (privacy-first).
  * `flags.configPath` / `CONTRACT_CONFIG` exist so tests and embedded shells can isolate the file source.
  */
-export function resolveConfig(flags = {}) {
-  const cfgPath = flags.configPath ?? process.env.CONTRACT_CONFIG ?? join(homedir(), '.prompt-contract', 'config.json');
+export function readUserConfig(configPath) {
+  const cfgPath = configPath ?? process.env.CONTRACT_CONFIG ?? join(homedir(), '.prompt-contract', 'config.json');
   let file = {};
   try {
     if (existsSync(cfgPath)) file = JSON.parse(readFileSync(cfgPath, 'utf8'));
   } catch (err) {
     throw new PromptContractError(CODES.CONFIG, `invalid config at ${cfgPath}: ${err.message}`);
   }
+  return file;
+}
+
+export function resolveConfig(flags = {}) {
+  const file = readUserConfig(flags.configPath);
   const pick = (...sources) => { for (const s of sources) if (s !== undefined && s !== null && s !== '') return s; return undefined; };
 
   const provider = pick(flags.provider, process.env.CONTRACT_PROVIDER, file.provider, guessProvider(flags.baseUrl ?? process.env.CONTRACT_BASE_URL ?? file.baseUrl), 'openai');
-  const baseUrl = String(pick(flags.baseUrl, process.env.CONTRACT_BASE_URL, file.baseUrl, provider === 'ollama' ? 'http://localhost:11434' : 'https://api.openai.com/v1')).replace(/\/+$/, '');
-  const apiKey = pick(flags.apiKey, process.env.CONTRACT_API_KEY, file.apiKey, provider === 'ollama' ? 'ollama' : undefined);
-  const model = pick(flags.model, process.env.CONTRACT_MODEL, file.model, provider === 'ollama' ? 'qwen3:4b' : 'gpt-4o-mini');
+  const preset = PROVIDER_PRESETS[provider];
+  const baseUrl = String(pick(flags.baseUrl, process.env.CONTRACT_BASE_URL, file.baseUrl, preset?.baseUrl, provider === 'ollama' ? 'http://localhost:11434' : 'https://api.openai.com/v1')).replace(/\/+$/, '');
+  const apiKey = pick(flags.apiKey, process.env.CONTRACT_API_KEY, file.apiKey, preset?.keyless ? 'not-needed' : undefined, provider === 'ollama' ? 'ollama' : undefined);
+  const model = pick(flags.model, process.env.CONTRACT_MODEL, file.model, preset?.model, provider === 'ollama' ? 'qwen3:4b' : 'gpt-4o-mini');
   if (!apiKey) throw new PromptContractError(CODES.CONFIG, `no API key: set CONTRACT_API_KEY, --api-key, or ~/.prompt-contract/config.json (or use --provider ollama)`);
   return { provider, baseUrl, apiKey, model };
 }

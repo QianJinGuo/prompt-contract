@@ -11,6 +11,28 @@ const QUOTE_PAIRS = [
   ['\u300c', '\u300d']  // 「 」
 ];
 
+/**
+ * Strip reasoning-model blocks (<think>/<thinking>/<reasoning>/<thought>) so chain-of-thought
+ * from models like DeepSeek-R1, Qwen3-thinking, or Hermes never reaches a user surface
+ * (critical for prompt-prompt-contract watch: the cleaned text is pasted into the user's document).
+ * A reasoning tag opened but never closed is cut to end-of-text (truncated streams).
+ */
+const REASONING_TAGS = ['think', 'thinking', 'reasoning', 'thought'];
+
+export function stripReasoningBlocks(t) {
+  let prev;
+  do {
+    prev = t;
+    for (const tag of REASONING_TAGS) {
+      const tagPattern = new RegExp(`<${tag}>[\\s\\S]*?</${tag}>`, 'gi');
+      t = t.replace(tagPattern, '');
+      const openPattern = new RegExp(`<${tag}>[\\s\\S]*$`, 'i');
+      t = t.replace(openPattern, '');
+    }
+  } while (t !== prev);
+  return t;
+}
+
 /** Remove wrapping quote pairs, repeatedly (WorkBuddy stripWrappingQuotes, generalized). */
 export function stripWrappingQuotes(t) {
   let prev;
@@ -50,6 +72,7 @@ export function clampChars(t, maxChars) {
 
 export function postprocess(raw, maxChars) {
   let t = String(raw ?? '');
+  t = stripReasoningBlocks(t);
   t = stripFences(t);
   t = stripWrappingQuotes(t);
   t = t.trim();

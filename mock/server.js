@@ -23,6 +23,7 @@ export function createMockServer({ port = 0 } = {}) {
     requests: 0,
     lastChatBody: null,
     lastGenerateBody: null,
+    lastMessagesBody: null,
     aborts: 0
   };
 
@@ -70,6 +71,37 @@ export function createMockServer({ port = 0 } = {}) {
           }
           const payload = { choices: [{ delta: { content: chunks[i++] } }] };
           res.write(`data: ${JSON.stringify(payload)}\n\n`);
+        }, 8);
+        return;
+      }
+
+      // Anthropic Messages protocol: different auth header, system param, and event shapes.
+      // A thinking_delta is emitted on purpose so provider tests can prove reasoning is dropped.
+      if (req.method === 'POST' && url === '/v1/messages') {
+        let parsed = {};
+        try { parsed = JSON.parse(body); } catch { /* ignore */ }
+        state.lastMessagesBody = parsed;
+        if ((req.headers['x-api-key'] ?? '') !== 'test-key-123') {
+          res.writeHead(401, { 'content-type': 'application/json' });
+          res.end(JSON.stringify({ type: 'error', error: { message: 'bad key' } }));
+          return;
+        }
+        const full = pickResult(extractUserInput(parsed.messages));
+        res.writeHead(200, { 'content-type': 'text/event-stream' });
+        res.write('event: message_start\ndata: {"type":"message_start"}\n\n');
+        res.write('event: content_block_delta\ndata: {"type":"content_block_delta","delta":{"type":"thinking_delta","thinking":"internal reasoning must never surface"}}\n\n');
+        const chunks = full.match(/[\s\S]{1,16}/g) ?? [];
+        let i = 0;
+        const timer = setInterval(() => {
+          if (res.destroyed) { state.aborts++; clearInterval(timer); return; }
+          if (i >= chunks.length) {
+            clearInterval(timer);
+            res.write('event: message_stop\ndata: {"type":"message_stop"}\n\n');
+            res.end();
+            return;
+          }
+          const payload = { type: 'content_block_delta', delta: { type: 'text_delta', text: chunks[i++] } };
+          res.write(`event: content_block_delta\ndata: ${JSON.stringify(payload)}\n\n`);
         }, 8);
         return;
       }
@@ -125,6 +157,7 @@ if (process.argv[1]?.endsWith('mock/server.js')) {
   m.listen().then((p) => {
     process.stdout.write(`mock upstream listening on http://127.0.0.1:${p}\n`);
     process.stdout.write('  openai-compatible: POST /v1/chat/completions (key: test-key-123)\n');
+    process.stdout.write('  anthropic:         POST /v1/messages (x-api-key: test-key-123)\n');
     process.stdout.write('  ollama:            POST /api/chat\n');
   });
 }
