@@ -1,5 +1,5 @@
 {
-  "name": "@qianjinguo/prompt-contract",
+  "name": "prompt-contract",
   "version": "0.2.1",
   "publishConfig": {
     "access": "public"

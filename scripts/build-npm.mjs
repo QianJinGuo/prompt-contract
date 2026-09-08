@@ -5,7 +5,7 @@
  * exactly like the repo (zero-dependency guarantee carries over verbatim):
  *
  *   build/npm/
- *     package.json            (name: @qianjinguo/prompt-contract, bin x3)
+ *     package.json            (name: prompt-contract, bin x3)
  *     packages/cli/**         (bin/contract.js — imports ../../core/src/*)
  *     packages/core/src/**
  *     packages/mcp-server/**  (bin + src — imports ../../core/src/*)
@@ -40,12 +40,11 @@ for (const src of [
 }
 
 const pkg = {
-  // Scoped name: npm blocks unscoped names here — "prompt-boost" via the
-  // typosquat policy (too similar to the existing "promptboost" package) and
-  // "prompt-contract" because another publisher already owns it. A scope
-  // matching the npm username is exempt from the similarity check, and the
-  // "prompt-contract" bin key keeps `npx @qianjinguo/prompt-contract` working.
-  name: '@qianjinguo/prompt-contract',
+  // Unscoped "prompt-boost" is blocked by npm's typosquat policy (too similar
+  // to the existing "promptboost" package), so the rename shipped as unscoped
+  // "prompt-contract" instead — owned by us and matching the product name.
+  // The "prompt-contract" bin key keeps `npx prompt-contract` working.
+  name: 'prompt-contract',
   version: '0.2.1',
   publishConfig: { access: 'public' },
   description: 'One-key prompt enhancement — turn vague ideas into structured task specs anywhere you type to an AI. CLI + MCP server. Zero dependencies, BYOK, offline-capable (Ollama).',
