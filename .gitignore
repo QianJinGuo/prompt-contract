@@ -12,3 +12,6 @@ Thumbs.db
 *.log
 .idea/
 .vscode/
+
+# computer-use tooling artifacts
+.playwright-cli/
