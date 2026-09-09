@@ -8,6 +8,7 @@
 |---|---|---|
 | core 引擎 + providers + 3 profiles + CLI + MCP server + playground + 中英 README（M0） | ✅ 实现 | PRD §10 最小集，拍板结论（§0.4/§11） |
 | `prompt-contract eval` 确定性规则断言部分 | ✅ 提前实现为 `prompt-contract check` | PRD 附录「硬约束进 eval 断言」——规则与模板共用同一规格，是本版验收标准本身 |
+| coding-agent 任务级评测 harness + curated fixtures | ✅ harness 与离线格式门禁已实现；❌ 尚无下游结果 | `eval/task-harness.mjs`、`eval/task-fixtures.json`、[TASK-EVAL.md](TASK-EVAL.md)；runner 由实际评测环境提供 |
 | `prompt-contract spike-0` macOS 取词/剪贴板恢复/焦点 dry-run 诊断 | ✅ 实现 | `packages/cli/src/spike-0.js` + `packages/cli/test/spike-0.test.js`；阈值与权限见 [SPIKE-0.md](SPIKE-0.md) |
 | `prompt-contract watch` 快捷键常驻（CLI v0.1：热键→取词→增强→焦点校验回贴，D7 证据门控） | ✅ 实现 | Spike-0 证据机制已产出，门控解除；见 [WATCH.md](WATCH.md)。浮窗确认/托盘/自启/notarization 仍按 PRD §7 分期 |
 | 浏览器插件、SDK 独立包、LLM-as-judge leaderboard | ❌ 不实现 | M1/M2 分期 |
@@ -44,11 +45,11 @@
 
 外部评审（2026-09-07）指出的三项过度声明风险，此处固化为边界：
 
-1. **测试证明的是管线正确，不是增强有效。** 43 项测试使用的 mock 上游不理解 prompt（仅按是否含汉字返回固定文本），它们证明 SSE/MCP/CLI/取消/错误码等管线无回归；`eval/run.mjs` 只对手写样例跑规则断言。**「增强后的 prompt 是否让下游任务完成得更好」当前没有任何证据，这是 M2 的核心验证项，不是已达成事实。**
+1. **测试证明的是管线正确，不是增强有效。** 现有测试使用的 mock 上游不理解 prompt，它们证明 SSE/MCP/CLI/取消/错误码等管线无回归；`eval/run.mjs` 与 task harness 的 format gate 只证明格式/边界合规。**「增强后的 prompt 是否让下游任务完成得更好」当前没有任何下游结果，这是 M2 的核心验证项，不是已达成事实。**
 2. **规则断言是启发式**：`lang-consistency` 是脚本级检测而非语言识别；`no-hallucinated-tech` 依赖固定 denylist；`expand-not-answer` 基于开场白/问句模式；约束 #5（克制润色）完全未被确定性检查覆盖。它们证明格式与边界合规，不证明下游效果。
 3. **MCP prompt 模式的零 key 是端到端成立的**（v0.1.1 修复）：provider 解析已改为惰性——无任何配置时服务器正常启动，prompts 全可用；只有 tool 调用会返回结构化 `config_error`（有测试锁定该行为）。
 4. **厂商预设的默认模型 id 是尽力维护的建议值**：`PROVIDER_PRESETS` 提供各厂商 base URL 与小快模型建议默认，模型 id 可能随厂商改名/下线而过期；显式 `--model`/`CONTRACT_MODEL`/config 值恒优先于预设，实际可达性以 `prompt-contract doctor` 实测为准。
 
 ### M2 评测协议（修订：任务级效果优先）
 
-基线 prompt vs 增强后 prompt，在同一批真实任务集、多个下游模型上对比：任务完成率、重试/追问次数、范围漂移、幻觉率、token 成本与端到端时延。LLM-as-judge 仅作为其中一个评分器，不作为唯一证据。确定性规则断言继续作为格式下限门禁（本仓库现有 `prompt-contract check`）。
+`eval/task-fixtures.json` 提供同一批 curated repository-maintenance tasks 的 original/enhanced 配对；`eval/task-harness.mjs` 在确定性规则门禁通过后，按固定顺序交给外部 runner，记录任务完成、重试/追问次数、范围漂移、幻觉 flags、token cost 与 harness 测得的端到端时延。LLM-as-judge 仅作为其中一个评分器，不作为唯一证据。runner 的真实结果、模型/环境与重复次数必须随报告声明；在结果产生前不作有效性结论。

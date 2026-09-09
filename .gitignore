@@ -13,6 +13,8 @@ Thumbs.db
 .idea/
 .vscode/
 
+# task-level evaluation reports are run artifacts, not checked-in evidence
+eval/results/
 # computer-use tooling artifacts
 .playwright-cli/
 

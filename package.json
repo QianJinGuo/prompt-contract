@@ -12,9 +12,10 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "node --test packages/core/test/*.test.js packages/providers/test/*.test.js packages/cli/test/*.test.js packages/mcp-server/test/*.test.js",
+    "test": "node --test --test-concurrency=1 packages/core/test/*.test.js packages/providers/test/*.test.js packages/cli/test/*.test.js packages/mcp-server/test/*.test.js eval/*.test.mjs",
     "bench": "node packages/core/bench/bench.js",
     "eval": "node eval/run.mjs",
+    "eval:tasks": "node eval/run-task-eval.mjs",
     "mock": "node mock/server.js",
     "playground": "node packages/playground/serve.js"
   }

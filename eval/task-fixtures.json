@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "profile": "coding-agent",
+  "description": "Curated repository-maintenance tasks for paired original versus PromptBoost-enhanced evaluation.",
+  "fixtures": [
+    {
+      "id": "cli-dry-run",
+      "title": "Add a safe dry-run mode to an existing CLI",
+      "source": "curated-repository-maintenance",
+      "taskArea": "cli",
+      "original": "Add a dry-run mode to the CLI so users can preview file changes without changing the repository.",
+      "enhanced": "Add a `--dry-run` option to the existing CLI: report the planned file changes without writing files or changing configuration, preserve normal execution and its current output, and add tests for dry-run, normal execution, and an empty-change case. Do not add a new command or alter non-dry-run behavior.",
+      "acceptance": [
+        "The dry-run path reports planned changes and writes no files.",
+        "Normal execution keeps its existing behavior and output.",
+        "Tests cover dry-run, normal execution, and no changes."
+      ],
+      "scope": {
+        "in": ["existing CLI option parsing", "dry-run behavior", "focused tests"],
+        "out": ["new commands", "unrelated output changes", "new configuration fields"]
+      }
+    },
+    {
+      "id": "config-error-boundary",
+      "title": "Reject malformed configuration with a stable error",
+      "source": "curated-repository-maintenance",
+      "taskArea": "validation",
+      "original": "Reject malformed configuration files with a useful error instead of crashing.",
+      "enhanced": "Update the existing configuration parser to reject missing required fields and malformed values with one structured, user-facing error code and a concise message. Keep valid configuration behavior unchanged, add tests for each malformed case and one valid case, and avoid exposing file contents or secrets in the error. Do not change configuration discovery or add new configuration fields.",
+      "acceptance": [
+        "Malformed input returns the existing structured error channel.",
+        "Valid input produces the same parsed configuration as before.",
+        "Tests cover malformed fields, valid input, and secret-free messages."
+      ],
+      "scope": {
+        "in": ["existing configuration parser", "error shape", "parser tests"],
+        "out": ["configuration discovery", "new fields", "unrelated runtime behavior"]
+      }
+    },
+    {
+      "id": "stream-cancel",
+      "title": "Stop an in-flight streamed response on cancellation",
+      "source": "curated-repository-maintenance",
+      "taskArea": "request-lifecycle",
+      "original": "Make cancellation work while streaming a response.",
+      "enhanced": "Fix cancellation during an in-flight streamed response: propagate the caller's abort signal to the request, stop consuming further chunks, return the existing cancellation error, and add a regression test for cancellation after the first chunk. Preserve successful streaming and non-cancellation errors.",
+      "acceptance": [
+        "Cancellation after a received chunk stops further consumption.",
+        "The existing cancellation error is returned to the caller.",
+        "Successful streams and unrelated errors retain their behavior."
+      ],
+      "scope": {
+        "in": ["request cancellation path", "stream consumption", "regression tests"],
+        "out": ["new retry policy", "provider selection", "unrelated response parsing"]
+      }
+    },
+    {
+      "id": "public-source-boundary",
+      "title": "Document the public and private source boundary",
+      "source": "curated-repository-maintenance",
+      "taskArea": "documentation",
+      "original": "Document which source files are safe to publish.",
+      "enhanced": "Document the repository's public/private source boundary: identify the generated public projection, state that private raw source must not be copied into it, document the check a contributor should run before publishing, and add one example of a blocked path. Keep the documentation concise and do not expose credentials or private source content.",
+      "acceptance": [
+        "The generated public projection is named.",
+        "The private raw-source exclusion is explicit.",
+        "A contributor check and one blocked-path example are included."
+      ],
+      "scope": {
+        "in": ["publishing documentation", "public/private boundary", "pre-publish check"],
+        "out": ["source relocation", "credential examples", "new publishing automation"]
+      }
+    },
+    {
+      "id": "provider-test-timeout",
+      "title": "Make a provider test deterministic instead of hanging",
+      "source": "curated-repository-maintenance",
+      "taskArea": "testing",
+      "original": "Fix the flaky provider test that sometimes hangs.",
+      "enhanced": "Make the existing provider test deterministic: close its local server on both success and failure, bound the request with the test timeout, and assert the timeout error separately from other failures. Preserve the production request behavior and keep the success-path assertion unchanged. Do not weaken or skip the test.",
+      "acceptance": [
+        "The local test server closes on both success and failure.",
+        "A stalled request fails within the test timeout.",
+        "The success path keeps its existing assertion."
+      ],
+      "scope": {
+        "in": ["existing provider test", "test cleanup", "timeout assertion"],
+        "out": ["production request behavior", "skipping coverage", "new test framework"]
+      }
+    },
+    {
+      "id": "cli-json-errors",
+      "title": "Add machine-readable CLI errors without changing the default",
+      "source": "curated-repository-maintenance",
+      "taskArea": "cli",
+      "original": "Return machine-readable errors from the command line.",
+      "enhanced": "Add a machine-readable error mode to the existing CLI: emit one JSON object containing a stable error code and message, return a nonzero exit code for failures, and keep the current human-readable output unchanged by default. Add tests for missing input and a provider failure. Do not include credentials or raw response bodies in the JSON.",
+      "acceptance": [
+        "The machine-readable mode emits one stable JSON error object.",
+        "Failures return a nonzero exit code.",
+        "Default human-readable output and secret redaction remain unchanged."
+      ],
+      "scope": {
+        "in": ["existing CLI error path", "JSON error output", "CLI tests"],
+        "out": ["default output changes", "credential disclosure", "raw upstream response bodies"]
+      }
+    }
+  ]
+}
