@@ -27,7 +27,7 @@ if (basename(process.argv[1] || '') === 'contract') {
   process.stderr.write('[deprecated] this CLI is now `prompt-contract` (prompt-contract); the `prompt-contract` command will be removed in a future release.\n');
 }
 
-const VERSION = '0.2.1';
+const VERSION = '0.3.0';
 const USAGE = `prompt-contract — one-key prompt enhancement (PromptContract v${VERSION})
 
 Usage:

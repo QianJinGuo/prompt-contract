@@ -45,7 +45,7 @@ const pkg = {
   // "prompt-contract" instead — owned by us and matching the product name.
   // The "prompt-contract" bin key keeps `npx prompt-contract` working.
   name: 'prompt-contract',
-  version: '0.2.1',
+  version: '0.3.0',
   publishConfig: { access: 'public' },
   description: 'One-key prompt enhancement — turn vague ideas into structured task specs anywhere you type to an AI. CLI + MCP server. Zero dependencies, BYOK, offline-capable (Ollama).',
   license: 'Apache-2.0',
