@@ -7,7 +7,7 @@
 
 English · [简体中文](README.zh-CN.md)
 
-![PromptContract — a vague one-line request becomes a structured task spec (goal, scope, acceptance criteria, non-goals), verified by six hard rules via `prompt-contract check`. Real-LLM latency P50 2.3s; engine adds 0.005ms. CLI · MCP · Playground — zero dependencies, BYOK, offline-capable.](docs/assets/hero-cover.png)
+![Real PromptContract Playground UI — provider and profile controls, prompt input, and enhanced structured output in a BYOK browser interface.](docs/assets/hero-cover.png)
 
 **PromptContract is a deterministic prompt-contract layer for AI coding agents.** It compiles a vague one-line request into a structured task specification — goal, scope, constraints, acceptance criteria — and verifies the result against six hard rules before you ever see it.
 

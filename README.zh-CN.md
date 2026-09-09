@@ -6,7 +6,7 @@
 
 [English](README.md) · 简体中文
 
-![PromptContract——模糊的一句话被编译成结构化任务规范（目标 / 范围 / 验收标准 / 明确不做的事），六条硬规则经 `prompt-contract check` 校验。真实 LLM 端到端 P50 2.3s，引擎附加开销 0.005ms。CLI · MCP · Playground——零依赖、BYOK、可离线。](docs/assets/hero-cover.png)
+![真实 PromptContract Playground 界面——包含 provider、profile、输入框，以及 BYOK 浏览器界面中的增强结果。](docs/assets/hero-cover.png)
 
 **PromptContract 是面向 AI 编码 agent 的确定性 prompt 契约层**：把模糊的一句话编译成结构化任务规范（目标 / 范围 / 约束 / 验收标准），并在你看到结果之前用六条硬规则完成校验。
 
