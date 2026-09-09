@@ -1,6 +1,6 @@
 /**
  * The six hard constraints from the PRD appendix, as deterministic rule assertions.
- * Same spec drives three surfaces: `prompt-prompt-prompt-contract check` (CLI), playground badges, eval runner —
+ * Same spec drives three surfaces: `prompt-contract check` (CLI), playground badges, eval runner —
  * template and evaluation share one source of truth (PRD: 模板与评测共用同一份规格).
  *
  * Known heuristic limits (do not oversell — see docs/ACCEPTANCE.md "Evidence boundaries"):

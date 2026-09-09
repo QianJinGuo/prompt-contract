@@ -22,8 +22,8 @@ prompt-contract "..." --provider openai --base-url ... --model ...
 - provider (openai / ollama) 与端点类型:
 - OS:
 
-**规则断言输出（如相关）/ `prompt-prompt-contract check` output (if relevant)**
+**规则断言输出（如相关）/ `prompt-contract check` output (if relevant)**
 
 ```
-<!-- 粘贴 prompt-prompt-contract check 或 --json 中 rules 的输出 -->
+<!-- 粘贴 prompt-contract check 或 --json 中 rules 的输出 -->
 ```

@@ -53,6 +53,26 @@ test('e2e: contract reads prompt from stdin (pipe mode)', async () => {
   assert.equal(stdout.trim(), ZH_RESULT);
 });
 
+test('user-facing strings use the canonical command name (no doubled prefixes)', async () => {
+  const help = await runPb(['--help']);
+  assert.equal(help.code, 0);
+  assert.match(help.stdout, /prompt-contract check/);
+  assert.doesNotMatch(help.stdout, /prompt-prompt/);
+  const bad = await runPb(['check']);
+  assert.equal(bad.code, 2);
+  assert.match(bad.stderr, /prompt-contract check requires/);
+  assert.doesNotMatch(bad.stderr, /prompt-prompt/);
+});
+
+test('e2e: contract reads tab-separated pair from stdin in check mode', async () => {
+  const { code, stdout, stderr } = await runPb(['check', '--json'], {
+    input: '帮我做一个展示我家狗的网站\t' + ZH_RESULT
+  });
+  assert.equal(code, 0, stderr);
+  const rules = JSON.parse(stdout);
+  assert.equal(rules.pass, true, JSON.stringify(rules.results));
+});
+
 test('prompt-contract profiles lists the three built-in profiles', async () => {
   const { code, stdout } = await runPb(['profiles']);
   assert.equal(code, 0);

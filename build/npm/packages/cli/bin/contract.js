@@ -10,7 +10,7 @@ import { loadProfiles, loadProfile, resolveConfig } from '../../core/src/node.js
 import { createOpenAIProvider } from '../../providers/src/openai.js';
 import { createAnthropicProvider } from '../../providers/src/anthropic.js';
 import { createOllamaProvider } from '../../providers/src/ollama.js';
-import { readFileSync, existsSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import {
   createMacOSAdapter,
@@ -31,14 +31,14 @@ const VERSION = '0.3.0';
 const USAGE = `prompt-contract — one-key prompt enhancement (PromptContract v${VERSION})
 
 Usage:
-  prompt-prompt-prompt-contract "build me a website for my dog"     enhance a prompt (prints enhanced text to stdout)
+  prompt-contract "build me a website for my dog"     enhance a prompt (prints enhanced text to stdout)
   cat prompt.txt | prompt-contract                    enhance from stdin
-  prompt-prompt-contract profiles                            list built-in profiles
-  prompt-prompt-prompt-contract check --original "..." --enhanced "..."
+  prompt-contract profiles                            list built-in profiles
+  prompt-contract check --original "..." --enhanced "..."
                                          run the six hard-constraint rule assertions
-  prompt-prompt-contract doctor                              verify config, provider reachability, profiles
-  prompt-prompt-prompt-contract spike-0                             macOS-only capture/restore compatibility diagnostic (dry-run)
-  prompt-prompt-prompt-contract watch                               resident mode: select text → hotkey → enhanced text replaces it (macOS; docs/WATCH.md)
+  prompt-contract doctor                              verify config, provider reachability, profiles
+  prompt-contract spike-0                             macOS-only capture/restore compatibility diagnostic (dry-run)
+  prompt-contract watch                               resident mode: select text → hotkey → enhanced text replaces it (macOS; docs/WATCH.md)
 
 Options:
   -p, --profile <name>     scenario profile (default: coding-agent)
@@ -103,11 +103,14 @@ function makeProvider(cfg, { warm = false } = {}) {
   return provider;
 }
 
-function readStdin() {
-  try {
-    if (existsSync('/dev/stdin') && !process.stdin.isTTY) return readFileSync(0, 'utf8');
-  } catch { /* fall through */ }
-  return '';
+// Read piped stdin via the stream API. readFileSync(0) is unsafe here: once
+// Node has touched stdin the fd can be non-blocking, and a sync read then
+// throws EAGAIN — an intermittent failure seen on macOS runners.
+async function readStdin() {
+  if (process.stdin.isTTY) return '';
+  const chunks = [];
+  for await (const chunk of process.stdin) chunks.push(chunk);
+  return Buffer.concat(chunks).toString('utf8');
 }
 
 function printRules(rules) {
@@ -120,7 +123,7 @@ function printRules(rules) {
 
 async function cmdEnhance(flags) {
   let text = flags._.join(' ');
-  if (!text.trim() && !process.stdin.isTTY) text = readStdin();
+  if (!text.trim() && !process.stdin.isTTY) text = await readStdin();
   const profile = loadProfile(flags.profile || 'coding-agent');
   const cfg = resolveConfig(flags);
   const provider = makeProvider(cfg, { warm: true });
@@ -148,7 +151,7 @@ async function cmdEnhance(flags) {
     if (!flags.noStream) {
       process.stderr.write(`\n— ${res.meta.profile} · ${res.meta.model} · ${res.meta.ms}ms · ${res.meta.chars} chars\n`);
       if (!rules.pass) {
-        process.stderr.write('rule assertions (advisory — run `prompt-prompt-prompt-contract check` for gate mode):\n');
+        process.stderr.write('rule assertions (advisory — run `prompt-contract check` for gate mode):\n');
         for (const r of rules.results.filter((r) => !r.pass)) {
           process.stderr.write(`  [FAIL] ${r.title}${r.detail ? ` — ${r.detail}` : ''}\n`);
         }
@@ -168,12 +171,12 @@ function cmdProfiles(flags) {
   return 0;
 }
 
-function cmdCheck(flags) {
+async function cmdCheck(flags) {
   let original = flags.original;
   let enhanced = flags.enhanced;
   if (!original && !enhanced && !process.stdin.isTTY) {
     // accept "original\tenhanced" or JSON line on stdin
-    const line = readStdin().trim();
+    const line = (await readStdin()).trim();
     try {
       const j = JSON.parse(line);
       original = j.original; enhanced = j.enhanced;
@@ -183,7 +186,7 @@ function cmdCheck(flags) {
     }
   }
   if (original === undefined || enhanced === undefined) {
-    process.stderr.write('prompt-prompt-contract check requires --original and --enhanced (or a JSON {original, enhanced} line on stdin)\n');
+    process.stderr.write('prompt-contract check requires --original and --enhanced (or a JSON {original, enhanced} line on stdin)\n');
     return 2;
   }
   const rules = checkRules(original, enhanced, { maxChars: flags.maxChars ? parseInt(flags.maxChars, 10) : 800 });
@@ -219,7 +222,7 @@ async function cmdDoctor(flags) {
 
 async function cmdSpike0(flags) {
   if (!isMacOS) {
-    process.stderr.write('prompt-prompt-contract spike-0 is macOS-only: requires pbpaste, pbcopy, and Accessibility-backed System Events.\n');
+    process.stderr.write('prompt-contract spike-0 is macOS-only: requires pbpaste, pbcopy, and Accessibility-backed System Events.\n');
     return 2;
   }
 
@@ -231,7 +234,7 @@ async function cmdSpike0(flags) {
   const pauseMs = flags.pauseMs === undefined ? 0 : Number.parseInt(flags.pauseMs, 10);
   const setupDelayMs = flags.setupDelayMs === undefined ? 0 : Number.parseInt(flags.setupDelayMs, 10);
   if (!Number.isInteger(iterations) || iterations < 1 || !Number.isInteger(settleMs) || settleMs < 0 || !Number.isInteger(pauseMs) || pauseMs < 0 || !Number.isInteger(setupDelayMs) || setupDelayMs < 0) {
-    process.stderr.write('prompt-prompt-contract spike-0 requires non-negative integer --settle-ms/--pause-ms/--setup-delay-ms and positive integer --iterations\n');
+    process.stderr.write('prompt-contract spike-0 requires non-negative integer --settle-ms/--pause-ms/--setup-delay-ms and positive integer --iterations\n');
     return 2;
   }
 
@@ -265,7 +268,7 @@ async function main() {
     case undefined:
     case 'boost': return await cmdEnhance(flags);
     case 'profiles': return cmdProfiles(flags);
-    case 'check': return cmdCheck(flags);
+    case 'check': return await cmdCheck(flags);
     case 'doctor': return await cmdDoctor(flags);
     case 'spike-0': return await cmdSpike0(flags);
     case 'watch': return await cmdWatch(flags);

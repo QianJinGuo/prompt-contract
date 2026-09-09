@@ -1,6 +1,6 @@
 # Spike-0: macOS capture/restore diagnostic
 
-Spike-0 measures the macOS capture link and keeps the paste-back step as a validation-only dry run. Its passing report is the evidence `prompt-prompt-contract watch` requires at startup (decision D7); the report itself never authorizes or unlocks anything.
+Spike-0 measures the macOS capture link and keeps the paste-back step as a validation-only dry run. Its passing report is the evidence `prompt-contract watch` requires at startup (decision D7); the report itself never authorizes or unlocks anything.
 
 ## Run it
 
@@ -83,4 +83,4 @@ Apple’s permission descriptions are documented in [Accessibility access](https
 - Clipboard preservation is exact for text-only pasteboards. Rich clipboard preservation is not implemented; those attempts fail closed.
 - The report records dry-run eligibility, not actual replacement correctness or end-to-end LLM latency.
 - A terminal/automation harness can steal focus. Treat such runs as evidence of focus drift, not as a passing app result; run the diagnostic with the target app actually frontmost.
-- `prompt-prompt-contract watch` consumes a passing report as its startup evidence gate (`prompt-prompt-contract watch --report <file>`, or `--force` to override). The report itself remains a compatibility measurement, not an authorization.
+- `prompt-contract watch` consumes a passing report as its startup evidence gate (`prompt-contract watch --report <file>`, or `--force` to override). The report itself remains a compatibility measurement, not an authorization.

@@ -7,7 +7,7 @@
 
 English · [简体中文](README.zh-CN.md)
 
-![PromptContract — a vague one-line request becomes a structured task spec (goal, scope, acceptance criteria, non-goals), verified by six hard rules via `prompt-prompt-contract check`. Real-LLM latency P50 2.3s; engine adds 0.005ms. CLI · MCP · Playground — zero dependencies, BYOK, offline-capable.](docs/assets/hero-cover.png)
+![PromptContract — a vague one-line request becomes a structured task spec (goal, scope, acceptance criteria, non-goals), verified by six hard rules via `prompt-contract check`. Real-LLM latency P50 2.3s; engine adds 0.005ms. CLI · MCP · Playground — zero dependencies, BYOK, offline-capable.](docs/assets/hero-cover.png)
 
 **PromptContract is a deterministic prompt-contract layer for AI coding agents.** It compiles a vague one-line request into a structured task specification — goal, scope, constraints, acceptance criteria — and verifies the result against six hard rules before you ever see it.
 
@@ -16,7 +16,7 @@ It is *not* a smarter brain: your model does the thinking, PromptContract makes 
 ## Why PromptContract
 
 - **Stable agent inputs** — a profile plus hard constraints turn "a website for my dog" into goal / scope / acceptance criteria / explicit non-goals. Reduced retries and scope drift are hypotheses measured by the task-level harness, not current product claims.
-- **Six deterministic guardrails** — language consistency, enhanced-text-only, length & completeness, expand-don't-answer, no hallucinated tech. Every enhancement can be asserted with `prompt-prompt-contract check`; the same spec drives templates and tests.
+- **Six deterministic guardrails** — language consistency, enhanced-text-only, length & completeness, expand-don't-answer, no hallucinated tech. Every enhancement can be asserted with `prompt-contract check`; the same spec drives templates and tests.
 - **One engine, three surfaces** — a CLI, an MCP server (agent-invoked **tool** + user-invoked **slash prompts**), and a browser playground. All share one zero-dependency core.
 - **Private by architecture** — bring your own key, no server in the middle, no telemetry, offline-capable via Ollama.
 
@@ -30,21 +30,21 @@ node packages/cli/bin/contract.js "帮我做一个展示我家狗的网站" \
 node packages/playground/serve.js                       # → http://127.0.0.1:8123/  (or ?demo=1 for the self-running demo)
 ```
 
-Install: `npm i -g prompt-contract` — or zero-install: `npx prompt-prompt-prompt-contract "your vague idea"`.
+Install: `npm i -g prompt-contract` — or zero-install: `npx prompt-contract "your vague idea"`.
 
 ## Your real model
 
 ```bash
 export CONTRACT_API_KEY=sk-xxx CONTRACT_MODEL=gpt-4o-mini    # any OpenAI-compatible endpoint (vLLM, OpenRouter, your gateway…)
-prompt-prompt-contract "A website for my dog"
+prompt-contract "A website for my dog"
 
 export CONTRACT_PROVIDER=deepseek CONTRACT_API_KEY=sk-…      # vendor presets carry the base URL + a suggested model
 export CONTRACT_PROVIDER=qwen                                 # also: glm, moonshot, groq, openrouter, lmstudio (keyless)
 export CONTRACT_PROVIDER=anthropic CONTRACT_API_KEY=sk-ant-…  # native Messages API — thinking deltas dropped in transport
-prompt-prompt-contract "帮我写一封请假邮件"
+prompt-contract "帮我写一封请假邮件"
 
 export CONTRACT_PROVIDER=ollama CONTRACT_MODEL=qwen3:4b      # fully local/offline; keep_alive pins the model in RAM
-prompt-prompt-prompt-contract "帮我写一封请假邮件"
+prompt-contract "帮我写一封请假邮件"
 ```
 
 Or write `~/.prompt-contract/config.json` once: `{ "provider": "openai", "baseUrl": "…", "apiKey": "…", "model": "…" }`.
@@ -93,7 +93,7 @@ raw input → script/scenario detect → profile + hard constraints + strength (
 ## Status & roadmap — stated honestly
 
 - **Shipped:** engine, CLI (`prompt-contract` / `check` / `doctor` / `profiles` / `spike-0` / `watch`), MCP server (tool + zero-key prompts), playground, 3 profiles, eval cases, CI matrix.
-- **Resident mode:** `prompt-prompt-contract watch` — select text anywhere on macOS, press ⌥B, and the enhanced prompt replaces your selection: clipboard backed up and restored, focus re-validated before pasting, gated by `prompt-prompt-contract spike-0` evidence (decision D7). See [docs/WATCH.md](docs/WATCH.md). `prompt-prompt-contract spike-0` itself remains a dry-run diagnostic and never pastes; see [docs/SPIKE-0.md](docs/SPIKE-0.md).
+- **Resident mode:** `prompt-contract watch` — select text anywhere on macOS, press ⌥B, and the enhanced prompt replaces your selection: clipboard backed up and restored, focus re-validated before pasting, gated by `prompt-contract spike-0` evidence (decision D7). See [docs/WATCH.md](docs/WATCH.md). `prompt-contract spike-0` itself remains a dry-run diagnostic and never pastes; see [docs/SPIKE-0.md](docs/SPIKE-0.md).
 - **Open validation:** task-level outcome evaluation remains an evidence-gathering task. The harness and curated fixture set exist, but PromptContract's downstream effectiveness is still a hypothesis until a declared runner produces reviewed results.
 - Deferred: animated demo asset, IDE plugins, LLM-as-judge as *one* scorer inside the task-level eval.
 

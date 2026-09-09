@@ -7,9 +7,9 @@
 | PRD 内容 | 本版是否实现 | 依据 |
 |---|---|---|
 | core 引擎 + providers + 3 profiles + CLI + MCP server + playground + 中英 README（M0） | ✅ 实现 | PRD §10 最小集，拍板结论（§0.4/§11） |
-| `prompt-contract eval` 确定性规则断言部分 | ✅ 提前实现为 `prompt-prompt-contract check` | PRD 附录「硬约束进 eval 断言」——规则与模板共用同一规格，是本版验收标准本身 |
-| `prompt-prompt-contract spike-0` macOS 取词/剪贴板恢复/焦点 dry-run 诊断 | ✅ 实现 | `packages/cli/src/spike-0.js` + `packages/cli/test/spike-0.test.js`；阈值与权限见 [SPIKE-0.md](SPIKE-0.md) |
-| `prompt-prompt-contract watch` 快捷键常驻（CLI v0.1：热键→取词→增强→焦点校验回贴，D7 证据门控） | ✅ 实现 | Spike-0 证据机制已产出，门控解除；见 [WATCH.md](WATCH.md)。浮窗确认/托盘/自启/notarization 仍按 PRD §7 分期 |
+| `prompt-contract eval` 确定性规则断言部分 | ✅ 提前实现为 `prompt-contract check` | PRD 附录「硬约束进 eval 断言」——规则与模板共用同一规格，是本版验收标准本身 |
+| `prompt-contract spike-0` macOS 取词/剪贴板恢复/焦点 dry-run 诊断 | ✅ 实现 | `packages/cli/src/spike-0.js` + `packages/cli/test/spike-0.test.js`；阈值与权限见 [SPIKE-0.md](SPIKE-0.md) |
+| `prompt-contract watch` 快捷键常驻（CLI v0.1：热键→取词→增强→焦点校验回贴，D7 证据门控） | ✅ 实现 | Spike-0 证据机制已产出，门控解除；见 [WATCH.md](WATCH.md)。浮窗确认/托盘/自启/notarization 仍按 PRD §7 分期 |
 | 浏览器插件、SDK 独立包、LLM-as-judge leaderboard | ❌ 不实现 | M1/M2 分期 |
 
 ## 需求映射
@@ -22,22 +22,22 @@
 | R4 | 原文安全 / 一键回退（§1.2） | API 返回 `{text, original, meta}` 三元组；Playground 保留原文 + Revert 按钮；CLI `--json` 含 original | `pipeline.test.js` · Playground UI |
 | R5 | 结果清洗 + 结构化错误码（§1.2） | `clean.js`（思考块剥离/去引号/围栏/长度钳制/空→`llm_error`）；错误码 `empty_input` / `provider_unavailable` / `llm_error` / `aborted` / `config_error` / `profile_not_found` | `clean.test.js` · `pipeline.test.js` · providers 非 200 → `provider_unavailable` |
 | R6 | 取消即弃（§1.2 ADR-017 语义） | 全链路 `AbortSignal`；用户取消 → `aborted`，上游请求自然结束被丢弃 | `providers/test/openai.test.js`（流中断测试） |
-| R7 | 场景 profiles ×3 + PR 即贡献（§3.2 V1） | `profiles/*.md`（frontmatter + 正文模板），`core/profile.js` 零依赖解析器；新增场景 = 新增 md 文件 | `profile.test.js` · `prompt-prompt-contract profiles` |
+| R7 | 场景 profiles ×3 + PR 即贡献（§3.2 V1） | `profiles/*.md`（frontmatter + 正文模板），`core/profile.js` 零依赖解析器；新增场景 = 新增 md 文件 | `profile.test.js` · `prompt-contract profiles` |
 | R8 | 强度档位 polish/standard/expand（§3.2 V1） | 引擎注入 STRENGTH 段落到 system | `pipeline.test.js`（三种档位组装断言） |
 | R9 | 模型路由：小快模型 + OpenAI 兼容 + Ollama 本地（§3.2/§5.2） | `providers/openai.js`（SSE 流式，覆盖一切 OpenAI 兼容端点）+ `providers/anthropic.js`（原生 Messages SSE，思考增量在传输层丢弃）+ `providers/ollama.js`（原生 `/api/chat`）；`PROVIDER_PRESETS` 厂商预设（deepseek/qwen/glm/moonshot/groq/openrouter/lmstudio，显式配置恒优先） | `providers/test/*.test.js` · `config.test.js`（对本地 mock 流服务） |
 | R10 | **连接预热 + keep_alive 钉住模型**（§7.6-1，v1.1 合并项） | `provider.warmup()`：OpenAI 兼容端 GET /models 建 TLS 连接；Ollama 预载 + 每次请求携带 `keep_alive` | `ollama.test.js` 断言 keep_alive 参数直达服务端 |
 | R11 | MCP tools 接入（§6 agent 自主调用） | `mcp-server`：stdio JSON-RPC 2.0，`enhance_prompt` tool（text/profile/strength/context） | `mcp.test.js`：initialize → tools/list → tools/call 全链路 |
 | R12 | MCP prompts 接入（§6 用户显式触发 `/boost`） | 同 server 暴露 `boost-<profile>` prompts；**该模式把改写指令注入客户端自有模型，零 key 可用** | `mcp.test.js`：prompts/get 返回含 USER INPUT 的消息 |
-| R13 | CLI 形态（§4 P0） | `prompt-contract`：一次性增强（参数/stdin）、`--json`、`profiles`、`check`、`doctor`；`prompt-prompt-contract spike-0` 输出兼容性 JSON；`prompt-prompt-contract watch` 常驻循环（热键源/服务/门控全部可注入） | `cli.test.js` e2e · `spike-0.test.js` · `watch.test.js` |
+| R13 | CLI 形态（§4 P0） | `prompt-contract`：一次性增强（参数/stdin）、`--json`、`profiles`、`check`、`doctor`；`prompt-contract spike-0` 输出兼容性 JSON；`prompt-contract watch` 常驻循环（热键源/服务/门控全部可注入） | `cli.test.js` e2e · `spike-0.test.js` · `watch.test.js` |
 | R14 | Web playground（§4 P0 转化漏斗） | 单文件 UI，BYOK 直连（key 只存 localStorage），流式 + 规则徽章 + Revert；零构建、零依赖静态服务 | 手动 + `serve.js` 可启动 |
 | R15 | 性能预算（§5.3/§7.6） | 单次 POST、无中间件、模板精简、`max_tokens` 由 maxChars 推导；**不做结果缓存**（v1.1 缓存降级） | `bench.js`：引擎自身开销（组装+清洗）P50 < 5ms；TTFT 由 provider 决定并在 README 如实声明 |
-| R16 | 验收标准即规则断言（附录） | `rules.js` 6 条确定性断言 = `prompt-prompt-contract check` = Playground 徽章 = `eval/run.mjs` 用例跑分 | `eval/run.mjs` 全 PASS |
+| R16 | 验收标准即规则断言（附录） | `rules.js` 6 条确定性断言 = `prompt-contract check` = Playground 徽章 = `eval/run.mjs` 用例跑分 | `eval/run.mjs` 全 PASS |
 | R17 | 隐私（§5.4） | BYOK、key 仅本地（env/config/localStorage）、遥测为零、依赖为零（无供应链面） | `package.json` 无 dependencies；代码无遥测调用 |
 
 ## 独立软件事实声明
 
-- `prompt-prompt-contract watch`（CLI v0.1，2026-09-08 解除 D7 门控）：热键监听经 Carbon `RegisterEventHotKey`（Swift 辅助进程，仓库内嵌源码按需编译、无需额外权限）；取词/回贴需辅助功能授权；启动强制 `--report <spike-0.json>` 或 `--force`。浮窗确认、托盘、自启、notarization 仍未实现；回贴是有副作用的覆盖（⌘Z 不可承诺），焦点复验是必要而非充分的安全机制——详见 [WATCH.md](WATCH.md)。
-- `prompt-prompt-contract spike-0` 是 macOS-only、text-only clipboard 的 dry-run 诊断；它永不发送 ⌘V，因此不能证明真实 paste landing 正确。
+- `prompt-contract watch`（CLI v0.1，2026-09-08 解除 D7 门控）：热键监听经 Carbon `RegisterEventHotKey`（Swift 辅助进程，仓库内嵌源码按需编译、无需额外权限）；取词/回贴需辅助功能授权；启动强制 `--report <spike-0.json>` 或 `--force`。浮窗确认、托盘、自启、notarization 仍未实现；回贴是有副作用的覆盖（⌘Z 不可承诺），焦点复验是必要而非充分的安全机制——详见 [WATCH.md](WATCH.md)。
+- `prompt-contract spike-0` 是 macOS-only、text-only clipboard 的 dry-run 诊断；它永不发送 ⌘V，因此不能证明真实 paste landing 正确。
 - 引擎延迟基准只覆盖引擎自身开销；模型 TTFT 属于外部依赖，README 不做夸大承诺。
 
 ## 证据边界（本仓库不声称什么）
@@ -47,8 +47,8 @@
 1. **测试证明的是管线正确，不是增强有效。** 43 项测试使用的 mock 上游不理解 prompt（仅按是否含汉字返回固定文本），它们证明 SSE/MCP/CLI/取消/错误码等管线无回归；`eval/run.mjs` 只对手写样例跑规则断言。**「增强后的 prompt 是否让下游任务完成得更好」当前没有任何证据，这是 M2 的核心验证项，不是已达成事实。**
 2. **规则断言是启发式**：`lang-consistency` 是脚本级检测而非语言识别；`no-hallucinated-tech` 依赖固定 denylist；`expand-not-answer` 基于开场白/问句模式；约束 #5（克制润色）完全未被确定性检查覆盖。它们证明格式与边界合规，不证明下游效果。
 3. **MCP prompt 模式的零 key 是端到端成立的**（v0.1.1 修复）：provider 解析已改为惰性——无任何配置时服务器正常启动，prompts 全可用；只有 tool 调用会返回结构化 `config_error`（有测试锁定该行为）。
-4. **厂商预设的默认模型 id 是尽力维护的建议值**：`PROVIDER_PRESETS` 提供各厂商 base URL 与小快模型建议默认，模型 id 可能随厂商改名/下线而过期；显式 `--model`/`CONTRACT_MODEL`/config 值恒优先于预设，实际可达性以 `prompt-prompt-contract doctor` 实测为准。
+4. **厂商预设的默认模型 id 是尽力维护的建议值**：`PROVIDER_PRESETS` 提供各厂商 base URL 与小快模型建议默认，模型 id 可能随厂商改名/下线而过期；显式 `--model`/`CONTRACT_MODEL`/config 值恒优先于预设，实际可达性以 `prompt-contract doctor` 实测为准。
 
 ### M2 评测协议（修订：任务级效果优先）
 
-基线 prompt vs 增强后 prompt，在同一批真实任务集、多个下游模型上对比：任务完成率、重试/追问次数、范围漂移、幻觉率、token 成本与端到端时延。LLM-as-judge 仅作为其中一个评分器，不作为唯一证据。确定性规则断言继续作为格式下限门禁（本仓库现有 `prompt-prompt-contract check`）。
+基线 prompt vs 增强后 prompt，在同一批真实任务集、多个下游模型上对比：任务完成率、重试/追问次数、范围漂移、幻觉率、token 成本与端到端时延。LLM-as-judge 仅作为其中一个评分器，不作为唯一证据。确定性规则断言继续作为格式下限门禁（本仓库现有 `prompt-contract check`）。

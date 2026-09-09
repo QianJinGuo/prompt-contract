@@ -1,10 +1,10 @@
-# Watch: resident hotkey mode (`prompt-prompt-prompt-contract watch`)
+# Watch: resident hotkey mode (`prompt-contract watch`)
 
-`prompt-prompt-prompt-contract watch` is the Snipaste-style resident mode (PRD §7): you select text anywhere
+`prompt-contract watch` is the Snipaste-style resident mode (PRD §7): you select text anywhere
 on macOS, press the hotkey, and the selected prompt is replaced with its enhanced
 version. It reuses the same engine as the CLI — profile + hard constraints +
 one streaming LLM call — and the same capture/clipboard machinery that
-`prompt-prompt-prompt-contract spike-0` measures.
+`prompt-contract spike-0` measures.
 
 ## Run it
 
@@ -28,7 +28,7 @@ selection. Your original clipboard content is restored afterwards.
 
 Watch pastes over your text, so it refuses to start without measured evidence:
 
-- `--report <path>` — a passing `prompt-prompt-prompt-contract spike-0` compatibility report
+- `--report <path>` — a passing `prompt-contract spike-0` compatibility report
   (`schemaVersion: prompt-contract/spike-0.v1`, `decision.pass: true`), or
 - `--force` — explicit override if you accept the risk without evidence.
 
@@ -97,8 +97,8 @@ the Xcode Command Line Tools (`xcode-select --install`).
 ## macOS permissions
 
 - **Accessibility** (System Settings → Privacy & Security → Accessibility) must
-  be granted to the terminal/launcher that starts `prompt-prompt-prompt-contract watch` — the same
-  requirement as `prompt-prompt-prompt-contract spike-0`, needed for the ⌘C/⌘V keystrokes and the
+  be granted to the terminal/launcher that starts `prompt-contract watch` — the same
+  requirement as `prompt-contract spike-0`, needed for the ⌘C/⌘V keystrokes and the
   `AXFocusedUIElement` queries.
 - macOS may also ask to allow the terminal to control **System Events** under
   Privacy & Security → Automation.
@@ -113,7 +113,7 @@ the Xcode Command Line Tools (`xcode-select --install`).
   as necessary, not sufficient. The PRD's floating confirmation window (§7.3)
   is the planned stronger guard and is **not** part of this version.
 - Also not in this version: menu bar icon/tray, launchd auto-start, code
-  signing/notarization (PRD M0.5 full scope). `prompt-prompt-prompt-contract watch` is a foreground
+  signing/notarization (PRD M0.5 full scope). `prompt-contract watch` is a foreground
   terminal process; Ctrl+C quits.
 - macOS only (like Spike-0). `--trigger stdin` works on any platform for
   testing, but capture/paste still needs macOS.
@@ -123,7 +123,7 @@ the Xcode Command Line Tools (`xcode-select --install`).
   startup and keeps the hotkey path initialization-free (PRD §7.6), but the
   first enhance on a cold local Ollama model still takes seconds — keep the
   model pinned via `keep_alive`.
-- The `prompt-prompt-prompt-contract watch` cycle is covered by unit tests with injected fakes
+- The `prompt-contract watch` cycle is covered by unit tests with injected fakes
   (`packages/cli/test/watch.test.js`); the physical capture→paste landing was
   validated by the Spike-0 cohort you run with `--report`. Neither proves
   enhanced prompts improve downstream outcomes.

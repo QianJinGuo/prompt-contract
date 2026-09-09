@@ -6,7 +6,7 @@
  *  - The user's clipboard is snapshotted and restored around every capture and paste.
  *  - Paste only fires when the foreground/focus identity still matches capture time;
  *    otherwise the cycle aborts with a notification (fail closed).
- *  - Evidence gate: `prompt-prompt-contract watch` requires a passing `prompt-prompt-contract spike-0` report (--report) or an
+ *  - Evidence gate: `prompt-contract watch` requires a passing `prompt-contract spike-0` report (--report) or an
  *    explicit --force, honoring decision D7. Spike-0 itself never unlocks anything.
  *  - --dry-run exercises capture + enhance but never issues ⌘V.
  *
@@ -486,7 +486,7 @@ async function defaultNotify({ title, message }) {
 }
 
 /**
- * `prompt-prompt-contract watch` entry point. Deps are injectable for tests; flags come from contract.js parseArgs.
+ * `prompt-contract watch` entry point. Deps are injectable for tests; flags come from contract.js parseArgs.
  */
 export async function runWatch(flags = {}, deps = {}) {
   const {
@@ -513,7 +513,7 @@ export async function runWatch(flags = {}, deps = {}) {
     readFile,
   });
   if (!gate.ok) {
-    log(`prompt-prompt-contract watch refused to start (decision D7 evidence gate): ${gate.reason}
+    log(`prompt-contract watch refused to start (decision D7 evidence gate): ${gate.reason}
 Watch pastes over your selection, so it runs only with measured evidence. Either:
   - run  prompt-contract spike-0 --json --output ~/.cache/prompt-contract/spike-0.json  first, then
         prompt-contract watch --report ~/.cache/prompt-contract/spike-0.json
@@ -526,7 +526,7 @@ Watch pastes over your selection, so it runs only with measured evidence. Either
   try {
     parseHotkey(hotkeySpec);
   } catch (err) {
-    log(`prompt-prompt-contract watch: ${err.message}
+    log(`prompt-contract watch: ${err.message}
 Fix it with --hotkey <spec> or the "hotkey" field in ~/.prompt-contract/config.json (e.g. "hotkey": "ctrl+alt+b").`);
     return 2;
   }
@@ -534,7 +534,7 @@ Fix it with --hotkey <spec> or the "hotkey" field in ~/.prompt-contract/config.j
   const macAdapter = adapter ?? createMacOSAdapter();
   const probe = await probeCaptureSafety(macAdapter);
   if (!probe.ok) {
-    log(`prompt-prompt-contract watch startup probe failed: ${probe.error}`);
+    log(`prompt-contract watch startup probe failed: ${probe.error}`);
     return 2;
   }
   for (const warning of probe.warnings) log(`watch: warning — ${warning}`);
@@ -599,7 +599,7 @@ Fix it with --hotkey <spec> or the "hotkey" field in ~/.prompt-contract/config.j
   const suffix = flags.dryRun ? ' · DRY-RUN (never pastes)' : '';
   const usingStdin = !source && flags.trigger === 'stdin';
   const triggerDesc = usingStdin ? label : `${label}  [${hotkeySpec}]`;
-  log(`prompt-prompt-contract watch resident — ${triggerDesc} enhances the selection · profile=${profileName} provider=${providerLabel}${suffix}
+  log(`prompt-contract watch resident — ${triggerDesc} enhances the selection · profile=${profileName} provider=${providerLabel}${suffix}
 Ctrl+C to quit. Paste replaces the selected text; the clipboard is restored afterwards. See docs/WATCH.md.`);
 
   await stopped;
