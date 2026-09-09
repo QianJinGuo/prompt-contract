@@ -31,6 +31,8 @@ node packages/playground/serve.js                       # → http://127.0.0.1:8
 
 安装：`npm i -g prompt-contract`；或零安装体验：`npx prompt-contract "你的模糊想法"`。
 
+在线 Playground：**[qianjinguo.github.io/prompt-contract](https://qianjinguo.github.io/prompt-contract/)**（BYOK——key 只留在你的浏览器本地；端点需允许 CORS）。
+
 ## 接入真实模型
 
 ```bash

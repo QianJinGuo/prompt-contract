@@ -32,6 +32,8 @@ node packages/playground/serve.js                       # → http://127.0.0.1:8
 
 Install: `npm i -g prompt-contract` — or zero-install: `npx prompt-contract "your vague idea"`.
 
+Playground in your browser: **[qianjinguo.github.io/prompt-contract](https://qianjinguo.github.io/prompt-contract/)** (BYOK — the key stays in your browser; endpoint must allow CORS).
+
 ## Your real model
 
 ```bash
