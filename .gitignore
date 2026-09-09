@@ -15,3 +15,6 @@ Thumbs.db
 
 # computer-use tooling artifacts
 .playwright-cli/
+
+# npm package assembly output (scripts/build-npm.mjs)
+build/
