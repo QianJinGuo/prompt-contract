@@ -56,6 +56,8 @@
   .actions { margin-top: 10px; display: flex; gap: 8px; }
   .btn { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 5px 14px; cursor: pointer; font-size: 13px; }
   .btn:hover { border-color: var(--accent); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .suggest { display: inline-flex; align-items: center; gap: 7px; }
   .badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
   .badge { font-size: 11px; border-radius: 99px; padding: 2px 10px; border: 1px solid var(--line); color: var(--dim); }
   .badge.pass { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 55%, transparent); }
@@ -80,7 +82,7 @@
         <option value="openai">OpenAI 兼容（云端）</option>
         <option value="ollama">Ollama（本地）</option>
       </select>
-      <input type="text" id="baseUrl" placeholder="https://api.openai.com/v1 或 http://localhost:11434" style="min-width:280px">
+      <input type="text" id="baseUrl" placeholder="基础 URL 或完整 /chat/completions 地址" style="min-width:280px">
       <input type="password" id="apiKey" placeholder="API key（本地 Ollama 可留空）">
       <input type="text" id="model" placeholder="model，如 gpt-4o-mini / qwen3:4b">
     </div>
@@ -98,11 +100,12 @@
   </div>
 
   <div class="card">
-    <textarea id="input" placeholder="把模糊的想法丢进来，比如：帮我做一个展示我家狗的网站　（⌘/Ctrl + Enter 增强）"></textarea>
+    <textarea id="input" placeholder="把模糊的想法丢进来，比如：帮我做一个展示我家狗的网站　（⌘/Ctrl + K 获取建议，⌘/Ctrl + Enter 增强）"></textarea>
     <div class="row">
       <button class="boost" id="go">✨ 增强</button>
+      <button class="btn suggest" id="suggestBtn" type="button">✨ 建议 prompt <kbd>⌘/Ctrl + K</kbd></button>
       <button class="btn" id="cancelBtn" style="display:none">取消</button>
-      <span class="hint">输入框原文始终保留在左侧，随时可对照或还原</span>
+      <span class="hint" id="inputHint">输入为空时，可用快捷键填入建议；已有内容不会被覆盖</span>
     </div>
     <div class="banner" id="banner"></div>
   </div>
@@ -124,17 +127,63 @@
   </div>
 </div>
 
+<script>
+(() => {
+  const banner = document.getElementById('banner');
+  const latency = document.getElementById('latency');
+  const go = document.getElementById('go');
+  let shown = false;
+
+  const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[char]));
+
+  function showBootstrapError(message, hint) {
+    if (shown) return;
+    shown = true;
+    if (go) { go.disabled = true; go.textContent = '初始化失败'; }
+    if (latency) { latency.textContent = 'engine error'; latency.classList.remove('on'); }
+    if (banner) {
+      banner.style.display = 'block';
+      banner.innerHTML = `<strong>页面初始化失败</strong><br><code>${escapeHtml(message)}</code><br>${escapeHtml(hint)}`;
+    }
+  }
+
+  const fileHint = '请从仓库根目录运行 node packages/playground/serve.js，再打开 http://127.0.0.1:8123/；不要直接双击 HTML 文件。';
+  if (location.protocol === 'file:') {
+    showBootstrapError('当前页面通过 file:// 打开：模块请求会落到 packages/playground/packages/core/src/index.js，结果为 net::ERR_FILE_NOT_FOUND。', fileHint);
+  }
+
+  window.addEventListener('error', (event) => {
+    if (event.target && event.target !== window && !(event.target instanceof HTMLScriptElement)) return;
+    if (!window.__promptContractModuleLoaded) {
+      showBootstrapError(event.message || `无法加载页面模块：${event.filename || '未知资源'}`, fileHint);
+    }
+  });
+
+  window.addEventListener('unhandledrejection', (event) => {
+    if (!window.__promptContractModuleLoaded) {
+      showBootstrapError(event.reason?.message || String(event.reason), '请检查部署目录是否包含 packages/core、packages/providers 和 profiles。');
+    }
+  });
+})();
+</script>
+
 <script type="module">
-import { enhance, checkRules, parseProfile, PromptContractError } from '/packages/core/src/index.js';
-import { createOpenAIProvider } from '/packages/providers/src/openai.js';
-import { createOllamaProvider } from '/packages/providers/src/ollama.js';
+import { enhance, checkRules, parseProfile, PromptContractError } from './packages/core/src/index.js';
+import { createOpenAIProvider } from './packages/providers/src/openai.js';
+import { createOllamaProvider } from './packages/providers/src/ollama.js';
+import { getSuggestedPrompt, suggestionCount } from './packages/playground/suggestions.js';
+
+window.__promptContractModuleLoaded = true;
 
 const $ = (id) => document.getElementById(id);
 const els = {
   provider: $('provider'), baseUrl: $('baseUrl'), apiKey: $('apiKey'), model: $('model'),
   input: $('input'), go: $('go'), cancel: $('cancelBtn'), out: $('outOut'), orig: $('origOut'),
   badges: $('badges'), banner: $('banner'), latency: $('latency'),
-  copy: $('copyBtn'), revert: $('revertBtn'), profiles: $('profiles'), hint: $('profileHint')
+  copy: $('copyBtn'), revert: $('revertBtn'), profiles: $('profiles'), hint: $('profileHint'),
+  suggest: $('suggestBtn'), inputHint: $('inputHint')
 };
 
 const PROFILE_NAMES = ['coding-agent', 'writing', 'image-gen'];
@@ -143,16 +192,62 @@ let currentProfile = 'coding-agent';
 let currentStrength = 'standard';
 let lastResult = null;
 let abortCtrl = null;
+let suggestionIndex = 0;
 
 /* ?demo=1 — self-running demo for README assets. Never persists config (your real key stays untouched). */
 const DEMO = new URLSearchParams(location.search).has('demo');
 const demoPort = DEMO && new URLSearchParams(location.search).get('port');
 const DEMO_BASE = demoPort ? `http://127.0.0.1:${demoPort}/v1` : 'http://127.0.0.1:8787/v1';
+const LOCAL_PLAYGROUND = location.protocol === 'http:' && ['127.0.0.1', 'localhost', '::1'].includes(location.hostname);
+
+function localProxyFetch(input, init = {}) {
+  const target = typeof input === 'string' ? input : input?.url;
+  const proxy = new URL('/__prompt_contract_proxy', location.origin);
+  proxy.searchParams.set('target', target);
+  return fetch(proxy, init);
+}
+
+function openCodeHeaders(baseUrl) {
+  let hostname;
+  try { hostname = new URL(baseUrl).hostname.toLowerCase(); } catch { return {}; }
+  if (hostname !== 'opencode.ai' && !hostname.endsWith('.opencode.ai')) return {};
+
+  const storageKey = 'contract.opencodeSession';
+  let session = '';
+  try { session = localStorage.getItem(storageKey) || ''; } catch { /* storage may be unavailable */ }
+  if (!session) {
+    session = globalThis.crypto?.randomUUID?.() || `pc-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    try { localStorage.setItem(storageKey, session); } catch { /* best effort */ }
+  }
+  return { 'x-opencode-session': session };
+}
 
 function selectProfile(name) {
   currentProfile = name;
+  suggestionIndex = 0;
   for (const c of els.profiles.children) c.classList.toggle('on', c.textContent === name);
-  els.hint.textContent = profiles[name] ? `${profiles[name].domain} · 输出上限 ${profiles[name].maxChars} 字符` : '';
+  if (!profiles[name]) { els.hint.textContent = ''; return; }
+  const limit = Number.isFinite(profiles[name].maxChars) ? `输出上限 ${profiles[name].maxChars} 字符` : '输出不做字符截断';
+  els.hint.textContent = `${profiles[name].domain} · ${limit}`;
+}
+
+function updateSuggestionAvailability() {
+  const empty = !els.input.value.trim();
+  els.suggest.disabled = !empty;
+  if (empty) {
+    els.inputHint.textContent = '输入为空时，可用快捷键填入建议；已有内容不会被覆盖';
+  } else {
+    els.inputHint.textContent = '输入已填入，可直接修改后增强';
+  }
+}
+
+function suggestPrompt() {
+  if (els.input.value.trim()) { els.input.focus(); return; }
+  els.input.value = getSuggestedPrompt(currentProfile, suggestionIndex);
+  suggestionIndex = (suggestionIndex + 1) % suggestionCount(currentProfile);
+  els.input.focus();
+  els.input.setSelectionRange(els.input.value.length, els.input.value.length);
+  updateSuggestionAvailability();
 }
 
 /* config persistence — key never leaves this browser (PRD §5.4); suppressed in demo mode */
@@ -166,9 +261,11 @@ els.provider.addEventListener('change', () => {
 });
 
 /* profiles: fetched and parsed with the same parser the CLI uses */
-const profilesLoaded = Promise.all(PROFILE_NAMES.map((name) =>
-  fetch(`/profiles/${name}.md`).then((r) => r.text()).then((md) => { profiles[name] = parseProfile(md); })
-));
+const profilesLoaded = Promise.all(PROFILE_NAMES.map(async (name) => {
+  const response = await fetch(`./profiles/${name}.md`);
+  if (!response.ok) throw new Error(`加载 profile ${name} 失败（HTTP ${response.status}）`);
+  profiles[name] = parseProfile(await response.text());
+})).catch(showError);
 for (const name of PROFILE_NAMES) {
   const chip = document.createElement('span');
   chip.className = 'chip' + (name === currentProfile ? ' on' : '');
@@ -184,6 +281,7 @@ if (DEMO) {
     els.model.value = 'mock-model';
     els.input.value = '帮我做一个展示我家狗的网站';
     selectProfile('coding-agent');
+    updateSuggestionAvailability();
     setTimeout(runBoost, 400);
   });
 }
@@ -196,21 +294,31 @@ for (const b of $('strength').children) {
 }
 
 function showError(err) {
-  const cors = err instanceof TypeError && !err.code;
+  const message = err?.message || String(err);
+  const causeMessage = err?.cause?.message || '';
+  const networkFailure = /failed to fetch|networkerror|load failed/i.test(`${message} ${causeMessage}`);
+  const hint = networkFailure
+    ? `<br>${LOCAL_PLAYGROUND
+      ? '本地代理无法连接提供商，请检查目标地址、网络和 API 配置。'
+      : '浏览器无法跨域直连该提供商（通常是 CORS）；请从仓库启动本地 playground，或改用 CLI / MCP。'}`
+    : '';
   els.banner.style.display = 'block';
-  els.banner.innerHTML = cors
-    ? '请求失败：浏览器直连被拦截（CORS / 网络不可达）。Ollama 需以 <code>OLLAMA_ORIGINS=*</code> 启动；云端服务需允许跨域，或改用 CLI / MCP 接入。'
-    : `<code>${err.code ?? 'error'}</code> — ${err.message}`;
+  els.banner.innerHTML = `<code>${escapeHtml(err?.code ?? 'error')}</code> — ${escapeHtml(message)}${hint}`;
 }
 function hideError() { els.banner.style.display = 'none'; }
+
+const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+}[char]));
 
 function buildProvider() {
   const baseUrl = els.baseUrl.value.trim() || (els.provider.value === 'ollama' ? 'http://localhost:11434' : 'https://api.openai.com/v1');
   const apiKey = els.apiKey.value.trim() || 'ollama';
   const model = els.model.value.trim() || (els.provider.value === 'ollama' ? 'qwen3:4b' : 'gpt-4o-mini');
+  const fetchImpl = LOCAL_PLAYGROUND ? localProxyFetch : undefined;
   return els.provider.value === 'ollama'
-    ? { provider: createOllamaProvider({ baseUrl }), model }
-    : { provider: createOpenAIProvider({ baseUrl, apiKey }), model };
+    ? { provider: createOllamaProvider({ baseUrl, fetchImpl }), model }
+    : { provider: createOpenAIProvider({ baseUrl, apiKey, extraHeaders: openCodeHeaders(baseUrl), fetchImpl }), model };
 }
 
 async function runBoost() {
@@ -235,7 +343,7 @@ async function runBoost() {
     els.out.textContent = res.text;
     els.orig.textContent = res.original;
     lastResult = res;
-    const rules = checkRules(res.original, res.text, { maxChars: profile?.maxChars ?? 800 });
+    const rules = checkRules(res.original, res.text, { maxChars: profile?.maxChars === undefined ? 800 : profile.maxChars });
     for (const r of rules.results) {
       const b = document.createElement('span');
       b.className = `badge ${r.pass ? 'pass' : 'fail'}`;
@@ -250,8 +358,13 @@ async function runBoost() {
       : `${res.meta.ms}ms · ${res.meta.chars} chars`;
     els.latency.classList.add('on');
   } catch (err) {
-    if (err?.code === 'aborted') { els.out.textContent = '（已取消，输入框内容未受影响）'; }
-    else showError(err);
+    if (err?.code === 'aborted') {
+      els.out.textContent = '（已取消，输入框内容未受影响）';
+      els.latency.textContent = 'cancelled';
+    } else {
+      showError(err);
+      els.latency.textContent = 'engine error';
+    }
   } finally {
     els.go.disabled = false; els.cancel.style.display = 'none';
     els.out.classList.remove('caret');
@@ -261,11 +374,25 @@ async function runBoost() {
 
 els.go.onclick = runBoost;
 els.cancel.onclick = () => abortCtrl?.abort();
+els.suggest.onclick = suggestPrompt;
+els.input.addEventListener('input', updateSuggestionAvailability);
 els.input.addEventListener('keydown', (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); runBoost(); }
 });
+window.addEventListener('keydown', (e) => {
+  if (e.isComposing || e.repeat || !(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'k') return;
+  e.preventDefault();
+  suggestPrompt();
+});
 els.copy.onclick = () => { if (lastResult) navigator.clipboard.writeText(lastResult.text); };
-els.revert.onclick = () => { if (lastResult) { els.input.value = lastResult.original; els.input.focus(); } };
+els.revert.onclick = () => {
+  if (lastResult) {
+    els.input.value = lastResult.original;
+    els.input.focus();
+    updateSuggestionAvailability();
+  }
+};
+updateSuggestionAvailability();
 </script>
 </body>
 </html>
