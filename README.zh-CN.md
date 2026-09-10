@@ -70,8 +70,9 @@ npm run bench   # 引擎自身开销 P50 ≈ 0.005ms（预算 <5ms）
 
 ## 状态与路线图（诚实版）
 
-- **已交付**：引擎、CLI（含 `prompt-contract spike-0`、`prompt-contract watch` 常驻模式）、MCP server（tool + 零 key prompts）、Playground、3 个 profiles、eval 用例、CI 矩阵
+- **已交付**：引擎、CLI（含 `prompt-contract spike-0`、`prompt-contract watch` 常驻模式、`prompt-contract draft` 草稿模式）、MCP server（tool + 零 key prompts）、Playground、3 个 profiles、eval 用例、CI 矩阵
 - **常驻模式**：`prompt-contract watch`——在 macOS 任意应用选中一段粗糙 prompt，按 ⌥B，增强结果原地替换选区：剪贴板先备份后恢复、回贴前焦点复验（漂移即放弃）、以 `prompt-contract spike-0` 证据为启动门控（决策 D7）；详见 [docs/WATCH.md](docs/WATCH.md)。`prompt-contract spike-0` 本身仍是 dry-run 诊断，永不发送粘贴；见 [docs/SPIKE-0.md](docs/SPIKE-0.md)
+- **草稿模式**：`prompt-contract draft`——在终端输入行直接起草 prompt，按增强热键（默认 alt+E，`--hotkey` 可改）原地重写，Enter 接受并复制到剪贴板；纯 readline 跨平台，无需 Accessibility 或辅助二进制；详见 [docs/DRAFT.md](docs/DRAFT.md)
 - **开放验证**：任务级效果评测的 harness 与任务 fixture 已交付，但还没有声明 runner 产生并复核结果；长期价值在此之前仍是假设
 - **推迟**：动画 demo 资产、IDE 插件、LLM-as-judge（作为任务级评测中的评分器之一）
 

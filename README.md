@@ -94,14 +94,15 @@ raw input → script/scenario detect → profile + hard constraints + strength (
 
 ## Status & roadmap — stated honestly
 
-- **Shipped:** engine, CLI (`prompt-contract` / `check` / `doctor` / `profiles` / `spike-0` / `watch`), MCP server (tool + zero-key prompts), playground, 3 profiles, eval cases, CI matrix.
+- **Shipped:** engine, CLI (`prompt-contract` / `check` / `doctor` / `profiles` / `spike-0` / `watch` / `draft`), MCP server (tool + zero-key prompts), playground, 3 profiles, eval cases, CI matrix.
 - **Resident mode:** `prompt-contract watch` — select text anywhere on macOS, press ⌥B, and the enhanced prompt replaces your selection: clipboard backed up and restored, focus re-validated before pasting, gated by `prompt-contract spike-0` evidence (decision D7). See [docs/WATCH.md](docs/WATCH.md). `prompt-contract spike-0` itself remains a dry-run diagnostic and never pastes; see [docs/SPIKE-0.md](docs/SPIKE-0.md).
+- **Draft mode:** `prompt-contract draft` — type a rough prompt on a terminal line, press the enhance hotkey (default alt+E, `--hotkey` to rebind), and it rewrites in place; Enter accepts to stdout + clipboard. Plain readline, cross-platform, no Accessibility permission or helper binary. See [docs/DRAFT.md](docs/DRAFT.md).
 - **Open validation:** task-level outcome evaluation remains an evidence-gathering task. The harness and curated fixture set exist, but PromptContract's downstream effectiveness is still a hypothesis until a declared runner produces reviewed results.
 - Deferred: animated demo asset, IDE plugins, LLM-as-judge as *one* scorer inside the task-level eval.
 
 ## Layout
 
-docs/ACCEPTANCE.md` · `docs/SPIKE-0.md` · `docs/WATCH.md` (requirements → implementation → acceptance + evidence boundaries)
+docs/ACCEPTANCE.md` · `docs/SPIKE-0.md` · `docs/WATCH.md` · `docs/DRAFT.md` (requirements → implementation → acceptance + evidence boundaries)
 
 ## Contributing & License
 
