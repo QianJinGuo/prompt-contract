@@ -10,11 +10,11 @@ one streaming LLM call — and the same capture/clipboard machinery that
 
 ```bash
 # 1. Gather capture-safety evidence first (decision D7 — one-time, macOS)
-node packages/cli/bin/pb.js spike-0 --json \
+node packages/cli/bin/contract.js spike-0 --json \
   --output ~/.cache/prompt-contract/spike-0.json
 
 # 2. Go resident
-node packages/cli/bin/pb.js watch \
+node packages/cli/bin/contract.js watch \
   --report ~/.cache/prompt-contract/spike-0.json \
   --provider anthropic   # or openai, ollama (local, no key), or presets: deepseek/qwen/glm/moonshot/groq/openrouter/lmstudio
 ```

@@ -21,6 +21,7 @@ import {
   runSpike0,
 } from '../src/spike-0.js';
 import { runWatch } from '../src/watch.js';
+import { runDraft } from '../src/draft.js';
 
 // `prompt-contract` was the command name before the prompt-contract rename; warn while the alias ships.
 if (basename(process.argv[1] || '') === 'contract') {
@@ -39,6 +40,7 @@ Usage:
   prompt-contract doctor                              verify config, provider reachability, profiles
   prompt-contract spike-0                             macOS-only capture/restore compatibility diagnostic (dry-run)
   prompt-contract watch                               resident mode: select text → hotkey → enhanced text replaces it (macOS; docs/WATCH.md)
+  prompt-contract draft                               interactive drafting: type, hotkey rewrites in place, Enter accepts (docs/DRAFT.md)
 
 Options:
   -p, --profile <name>     scenario profile (default: coding-agent)
@@ -65,6 +67,11 @@ Options:
       --report <path>      Spike-0 JSON report satisfying the watch evidence gate (D7)
       --force              run watch without Spike-0 evidence (at your own risk)
       --dry-run            watch: capture + enhance but never paste
+
+  draft options:
+      --hotkey <spec>      draft enhance combo: ctrl/alt/shift + a-z|0-9, e.g. "ctrl+k"
+                           (default alt+e; ctrl+c / ctrl+d stay reserved for exit)
+      CONTRACT_NO_CLIPBOARD=1   draft: skip the clipboard copy on Enter
       --paste-delay-ms <ms> watch: wait between ⌘V and clipboard restore (default: 1000)
       --cooldown-ms <ms>   watch: minimum gap between cycles (default: 800)
       --json               machine-readable output {original, enhanced, meta, rules}
@@ -166,7 +173,10 @@ function cmdProfiles(flags) {
   if (flags.json) {
     process.stdout.write(JSON.stringify(profiles.map((p) => ({ name: p.name, domain: p.domain, maxChars: p.maxChars })), null, 2) + '\n');
   } else {
-    for (const p of profiles) process.stdout.write(`${p.name.padEnd(14)} ${p.domain} (≤${p.maxChars} chars)\n`);
+    for (const p of profiles) {
+      const limit = Number.isFinite(p.maxChars) ? `≤${p.maxChars} chars` : 'unlimited chars';
+      process.stdout.write(`${p.name.padEnd(14)} ${p.domain} (${limit})\n`);
+    }
   }
   return 0;
 }
@@ -272,6 +282,7 @@ async function main() {
     case 'doctor': return await cmdDoctor(flags);
     case 'spike-0': return await cmdSpike0(flags);
     case 'watch': return await cmdWatch(flags);
+    case 'draft': return await runDraft(flags);
     default:
       // treat unknown first word as prompt text
       flags._.unshift(cmd);
